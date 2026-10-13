@@ -378,7 +378,7 @@ function App() {
   if (showVerifiedPage && !recoveryFlow) return <VerifiedPage onContinue={leaveVerifiedPage} />
 
   if (user && !recoveryFlow) {
-    return <AbyssLanding />
+    return <AbyssLanding onSignOut={signOut} signingOut={busy} />
   }
 
   const isSignup = mode === 'signup'

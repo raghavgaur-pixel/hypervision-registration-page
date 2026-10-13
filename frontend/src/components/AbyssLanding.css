@@ -201,3 +201,41 @@
   .abyss-atmosphere, .abyss-caret { animation: none; }
   .abyss-opening, .abyss-film { transition-duration: .01ms; }
 }
+
+
+.abyss-logout {
+  position: absolute;
+  z-index: 6;
+  top: max(20px, env(safe-area-inset-top));
+  right: clamp(20px, 4vw, 58px);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  color: rgba(238, 232, 220, .82);
+  background: rgba(7, 7, 9, .55);
+  border: 1px solid rgba(238, 220, 198, .22);
+  border-radius: 2px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px;
+  letter-spacing: .2em;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+
+.abyss-logout:hover:not(:disabled) {
+  color: #fff4e8;
+  background: rgba(35, 26, 28, .86);
+  border-color: rgba(238, 220, 198, .52);
+}
+
+.abyss-logout:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.abyss-logout span:last-child {
+  font-size: 14px;
+  letter-spacing: 0;
+}
