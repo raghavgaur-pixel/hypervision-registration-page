@@ -189,6 +189,24 @@ function App() {
   const [notice, setNotice] = useState(null)
   const [user, setUser] = useState(null)
   const [booting, setBooting] = useState(true)
+  const [apiStatus, setApiStatus] = useState('idle')
+
+  const verifyBackend = async (session) => {
+    if (!session?.access_token) {
+      setApiStatus('idle')
+      return
+    }
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+      const response = await fetch(`${apiUrl}/api/me`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      if (!response.ok) throw new Error('API verification failed')
+      setApiStatus('verified')
+    } catch {
+      setApiStatus('unavailable')
+    }
+  }
 
   useEffect(() => {
     if (!supabaseReady) {
@@ -199,10 +217,12 @@ function App() {
     supabase.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null)
       setBooting(false)
+      verifyBackend(data.session)
     })
 
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
+      verifyBackend(session)
     })
 
     return () => data.subscription.unsubscribe()
@@ -334,6 +354,7 @@ function App() {
           <h1>You’re <span>in.</span></h1>
           <p>Your next dimension is waiting, {user.user_metadata?.display_name || user.email?.split('@')[0] || 'traveller'}.</p>
           <div className="identity-row"><div className="identity-avatar">{(user.email || 'H').charAt(0).toUpperCase()}</div><div><span>AUTHENTICATED AS</span><strong>{user.email}</strong></div><ShieldCheck size={20} className="identity-check" /></div>
+          <div className={`api-status ${apiStatus}`}><span />{apiStatus === 'verified' ? 'PYTHON API · IDENTITY VERIFIED' : apiStatus === 'unavailable' ? 'PYTHON API · OFFLINE, AUTH STILL ACTIVE' : 'CHECKING IDENTITY SERVICE'}</div>
           <button className="submit-button" type="button" onClick={signOut} disabled={busy}>{busy ? 'Closing session…' : 'Sign out securely'} <ArrowRight size={17} /></button>
           {notice && <div className={`notice ${notice.type}`} role="status">{notice.text}</div>}
         </section>
