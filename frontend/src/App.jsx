@@ -423,133 +423,97 @@ function App() {
     )
   }
 
-  if (showShelf && !user && !recoveryFlow && !showVerifiedPage) {
-    return <AshenShelf onChoose={(nextMode) => {
-      setMode(nextMode)
-      setShowShelf(false)
-      setNotice(null)
-      setPassword('')
-      setConfirmPassword('')
-    }} />
-  }
-
   const isSignup = mode === 'signup'
   const isReset = mode === 'reset'
   const isUpdatePassword = mode === 'update-password'
 
-  return (
-    <main className="auth-shell">
-      <div className="ambient-grid" aria-hidden="true" />
-      <div className="ambient-glow ambient-one" />
-      <div className="ambient-glow ambient-two" />
-      <header className="topbar">
-        <Brand />
-        <div className="topbar-right"><span className="system-status"><span /> ALL SYSTEMS NOMINAL</span><span className="topbar-index">HV—01</span></div>
-      </header>
+  const renderAuthPanel = ({ onModeChange } = {}) => {
+    const switchMode = (nextMode) => {
+      if (onModeChange) onModeChange(nextMode)
+      else changeMode(nextMode)
+    }
+    return (
+      <div className="ashen-auth-panel">
+        <div className="ashen-auth-heading">
+          <span className="ashen-auth-eyebrow">{isReset ? 'RECOVERY PROTOCOL' : isUpdatePassword ? 'SECURITY KEY / RENEWAL' : isSignup ? 'VOLUME I / NEW IDENTITY' : 'VOLUME II / RETURNING IDENTITY'}</span>
+          <h2>{isReset ? <>Find your<br /><em>way back.</em></> : isUpdatePassword ? <>A second<br /><em>beginning.</em></> : isSignup ? <>Write your<br /><em>first page.</em></> : <>Welcome<br /><em>back.</em></>}</h2>
+          <p>{isReset ? 'A secure link will be sent if an account matches that address.' : isUpdatePassword ? 'Choose a new password for your Hypervision identity.' : isSignup ? 'Create an identity. The rest of the archive will open in time.' : 'Your place is still here. Pick up where you left off.'}</p>
+        </div>
 
-      <div className="layout-grid">
-        <section className="hero-panel">
-          <PortalScene />
-          <div className="hero-copy">
-            <div className="eyebrow"><span className="eyebrow-line" /> A PORTAL TO WHAT'S NEXT</div>
-            <h1>Be more than<br />your <span className="gradient-word">current tab.</span></h1>
-            <p className="hero-description">A new perspective. A different frequency. Consider this your invitation to step a little further beyond the ordinary.</p>
-            <div className="hero-cta">
-              <span className="cta-orbit"><ArrowDownRight size={18} /></span>
-              <div><strong>Your next chapter starts here.</strong><span>One identity. Infinite possibilities.</span></div>
-            </div>
+        {!isReset && !isUpdatePassword && (
+          <div className="ashen-auth-mode" role="tablist" aria-label="Authentication mode">
+            <button type="button" role="tab" aria-selected={isSignup} className={isSignup ? 'active' : ''} onClick={() => switchMode('signup')}>Register</button>
+            <button type="button" role="tab" aria-selected={!isSignup} className={!isSignup ? 'active' : ''} onClick={() => switchMode('login')}>Login</button>
           </div>
-          <div className="hero-side-note"><span className="side-note-line" /><span>FIELD NOTES / 001</span><strong>Make yourself at home<br />in the unknown.</strong></div>
-          <div className="hero-bottom">
-            <div className="coordinate-block"><span>KNOWN UNIVERSE</span><strong>LOCAL TIME: NOW</strong><strong>STATUS: BECOMING</strong></div>
-            <div className="signal-block"><span>LIVE SIGNAL</span><div className="signal-bars">{Array.from({ length: 19 }, (_, index) => <i key={index} style={{ '--bar': (9 + ((index * 17) % 28)) + 'px' }} />)}</div></div>
-          </div>
-          <div className="hero-index">HV / EXPERIENCE DESIGN <span>•</span> VOL. 01</div>
-        </section>
+        )}
 
-        <section className="form-side">
-          <div className="form-card">
-            <div className="form-card-top">
-              <div className="form-icon"><Sparkles size={19} /></div>
-              <span className="form-step">{isReset ? 'RECOVERY PROTOCOL' : isUpdatePassword ? 'NEW SECURITY KEY' : isSignup ? 'NEW IDENTITY / 01' : 'RETURNING IDENTITY / 02'}</span>
-            </div>
-            <div className="form-heading">
-              <h2>{isReset ? 'Find your way back.' : isUpdatePassword ? 'A fresh start.' : isSignup ? 'Make an entrance.' : 'Missed you.'}</h2>
-              <p>{isReset ? "We'll send a secure link to reset your password." : isUpdatePassword ? 'Set a new password for your Hypervision identity.' : isSignup ? "The universe is big. Your next chapter should be, too." : "Your place in the universe is still here."}</p>
-            </div>
+        <form className="ashen-auth-form" onSubmit={handleSubmit}>
+          {isSignup && (
+            <label className="ashen-auth-field">
+              <span>YOUR NAME</span>
+              <div className="ashen-auth-input"><UserRound size={15} aria-hidden="true" /><input value={name} onChange={(event) => setName(event.target.value)} placeholder="What should we call you?" autoComplete="name" minLength={2} maxLength={80} required /></div>
+            </label>
+          )}
 
-            {!isReset && !isUpdatePassword && (
-              <div className="mode-switch" role="tablist" aria-label="Authentication mode">
-                <button type="button" role="tab" aria-selected={isSignup} className={isSignup ? 'active' : ''} onClick={() => changeMode('signup')}>Create account</button>
-                <button type="button" role="tab" aria-selected={!isSignup} className={!isSignup ? 'active' : ''} onClick={() => changeMode('login')}>Sign in</button>
+          <label className="ashen-auth-field">
+            <span>EMAIL ADDRESS</span>
+            <div className="ashen-auth-input"><Mail size={15} aria-hidden="true" /><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@somewhere.com" autoComplete="email" maxLength={254} required /></div>
+          </label>
+
+          {!isReset && (
+            <label className="ashen-auth-field">
+              <span className="ashen-auth-label-line"><span>{isUpdatePassword ? 'NEW PASSWORD' : 'PASSWORD'}</span>{!isSignup && !isUpdatePassword && <button type="button" className="ashen-auth-text-button" onClick={() => changeMode('reset')}>Forgot password?</button>}{(isSignup || isUpdatePassword) && <small>MIN. 8 CHARACTERS</small>}</span>
+              <div className="ashen-auth-input">
+                <LockKeyhole size={15} aria-hidden="true" />
+                <input type={showPassword ? 'text' : 'password'} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="At least 8 characters" autoComplete={isSignup || isUpdatePassword ? 'new-password' : 'current-password'} minLength={8} required />
+                <button className="ashen-auth-visibility" type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide password' : 'Show password'}>{showPassword ? <EyeOff size={15} /> : <Eye size={15} />}</button>
               </div>
-            )}
+              {isSignup && password.length > 0 && <div className="ashen-auth-strength" aria-label={'Password strength ' + strength + ' out of 4'}><div>{[1, 2, 3, 4].map((item) => <i key={item} className={strength >= item ? 'filled' : ''} />)}</div><span>{['', 'Getting there', 'Fair', 'Strong', 'Excellent'][strength]}</span></div>}
+            </label>
+          )}
 
-            <form className="auth-form" onSubmit={handleSubmit}>
-              {isSignup && (
-                <label className="field-group">
-                  <span className="field-label">YOUR NAME <span className="field-hint">THE HUMAN VERSION</span></span>
-                  <div className="input-wrap"><UserRound size={17} /><input value={name} onChange={(event) => setName(event.target.value)} placeholder="What should we call you?" autoComplete="name" minLength={2} maxLength={80} required /></div>
-                </label>
-              )}
-
-              <label className="field-group">
-                <span className="field-label">EMAIL ADDRESS</span>
-                <div className="input-wrap"><Mail size={17} /><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@somewhere.com" autoComplete="email" maxLength={254} required /></div>
-              </label>
-
-              {!isReset && (
-                <label className="field-group">
-                  <span className="field-label">{isUpdatePassword ? 'NEW PASSWORD' : 'PASSWORD'} <span className="field-hint">{isSignup || isUpdatePassword ? 'MIN. 8 CHARACTERS' : <button type="button" className="text-button" onClick={() => changeMode('reset')}>Forgot password?</button>}</span></span>
-                  <PasswordField value={password} onChange={setPassword} visible={showPassword} setVisible={setShowPassword} autoComplete={isSignup || isUpdatePassword ? 'new-password' : 'current-password'} />
-                  {isSignup && password.length > 0 && (
-                    <div className="strength-meter" aria-label={'Password strength ' + strength + ' out of 4'}>
-                      <div className="strength-track">{[1, 2, 3, 4].map((item) => <i key={item} className={strength >= item ? 'filled strength-' + strength : ''} />)}</div>
-                      <span>{['', 'Getting there', 'Fair', 'Strong', 'Excellent'][strength]}</span>
-                    </div>
-                  )}
-                </label>
-              )}
-
-              {(isSignup || isUpdatePassword) && (
-                <label className="field-group">
-                  <span className="field-label">CONFIRM PASSWORD</span>
-                  <PasswordField value={confirmPassword} onChange={setConfirmPassword} visible={showConfirmPassword} setVisible={setShowConfirmPassword} autoComplete="new-password" placeholder="Type it one more time" />
-                </label>
-              )}
-
-              {isSignup && (
-                <label className="terms-check">
-                  <input type="checkbox" checked={accepted} onChange={(event) => setAccepted(event.target.checked)} />
-                  <span className="custom-check"><Check size={12} /></span>
-                  <span>I agree to the <a href="https://supabase.com/terms" target="_blank" rel="noreferrer">terms of service</a> and understand the privacy policy.</span>
-                </label>
-              )}
-
-              <Notice notice={notice} />
-              <button className="submit-button" type="submit" disabled={busy}>
-                <span>{busy ? (isReset ? 'Sending secure link…' : isSignup ? 'Creating your orbit…' : isUpdatePassword ? 'Updating password…' : 'Opening the portal…') : isReset ? 'Send reset link' : isUpdatePassword ? 'Save new password' : isSignup ? 'Create my account' : 'Enter Hypervision'}</span>
-                {busy ? <span className="button-spinner" /> : <ArrowRight size={18} />}
-              </button>
-            </form>
-
-            {isReset || isUpdatePassword ? (
-              <button className="back-link" type="button" onClick={() => { setRecoveryFlow(false); changeMode('login') }}><ArrowLeft size={15} /> Back to sign in</button>
-            ) : (
-              <div className="switch-prompt">
-                <span>{isSignup ? 'Already have a place here?' : 'New to this universe?'}</span>
-                <button type="button" onClick={() => changeMode(isSignup ? 'login' : 'signup')}>{isSignup ? 'Sign in instead' : 'Create an account'} <ChevronRight size={14} /></button>
+          {(isSignup || isUpdatePassword) && (
+            <label className="ashen-auth-field">
+              <span>{isUpdatePassword ? 'CONFIRM NEW PASSWORD' : 'CONFIRM PASSWORD'}</span>
+              <div className="ashen-auth-input">
+                <LockKeyhole size={15} aria-hidden="true" />
+                <input type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Type it one more time" autoComplete="new-password" minLength={8} required />
+                <button className="ashen-auth-visibility" type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} aria-label={showConfirmPassword ? 'Hide confirmation password' : 'Show confirmation password'}>{showConfirmPassword ? <EyeOff size={15} /> : <Eye size={15} />}</button>
               </div>
-            )}
-            {!isUpdatePassword && <button className="back-link shelf-return" type="button" onClick={() => { setShowShelf(true); setNotice(null) }}><ArrowLeft size={15} /> Return to the shelf</button>}
-            <div className="card-foot"><ShieldCheck size={14} /><span>SECURED BY SUPABASE</span><span className="foot-divider" /><span>YOUR DATA, YOURS</span></div>
-          </div>
-          <div className="form-side-note"><Zap size={13} /><span>Designed for the next version of you.</span></div>
-          {!supabaseReady && <div className="setup-pill"><span /> SUPABASE AWAITS CONFIGURATION</div>}
-        </section>
+            </label>
+          )}
+
+          {isSignup && (
+            <label className="ashen-auth-terms">
+              <input type="checkbox" checked={accepted} onChange={(event) => setAccepted(event.target.checked)} />
+              <span>I agree to the <a href="https://supabase.com/terms" target="_blank" rel="noreferrer">terms of service</a> and understand the privacy policy.</span>
+            </label>
+          )}
+
+          <Notice notice={notice} />
+          <button className="ashen-auth-submit" type="submit" disabled={busy}>
+            <span>{busy ? (isReset ? 'Sending secure link…' : isSignup ? 'Creating your orbit…' : isUpdatePassword ? 'Updating password…' : 'Opening the archive…') : isReset ? 'Send reset link' : isUpdatePassword ? 'Save new password' : isSignup ? 'Create my account' : 'Enter Hypervision'}</span>
+            {busy ? <span className="ashen-auth-spinner" /> : <ArrowRight size={16} />}
+          </button>
+        </form>
+
+        {(isReset || isUpdatePassword) ? (
+          <button className="ashen-auth-back" type="button" onClick={() => { setRecoveryFlow(false); switchMode('login') }}><ArrowLeft size={14} /> Back to Login</button>
+        ) : (
+          <p className="ashen-auth-switch-copy">{isSignup ? 'Already have an identity?' : 'New to the archive?'} <button type="button" onClick={() => switchMode(isSignup ? 'login' : 'signup')}>{isSignup ? 'Return to Login' : 'Create one'}</button></p>
+        )}
+        <div className="ashen-auth-foot"><ShieldCheck size={13} /><span>ENCRYPTED IDENTITY / POWERED BY SUPABASE</span></div>
       </div>
-      <footer className="page-footer"><span>HYPERVISION / IDENTITY SYSTEMS</span><span>BUILT FOR WHAT'S NEXT <ArrowDownRight size={13} /></span></footer>
-    </main>
+    )
+  }
+
+  return (
+    <AshenShelf
+      initialAuthMode={recoveryFlow ? mode : (!showShelf && !showVerifiedPage ? mode : null)}
+      activeAuthMode={mode}
+      onChoose={(nextMode) => changeMode(nextMode)}
+      renderAuthPanel={renderAuthPanel}
+    />
   )
 }
 
