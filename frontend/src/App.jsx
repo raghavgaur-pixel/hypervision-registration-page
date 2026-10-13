@@ -120,7 +120,10 @@ function App() {
   const [profileLoading, setProfileLoading] = useState(false)
   const [profileSaving, setProfileSaving] = useState(false)
   const [recoveryFlow, setRecoveryFlow] = useState(false)
-  const [showVerifiedPage, setShowVerifiedPage] = useState(() => new URLSearchParams(window.location.search).get('verified') === '1')
+  const [showVerifiedPage, setShowVerifiedPage] = useState(() => {
+    const params = new URLSearchParams(window.location.search)
+    return params.get('verified') === '1' && !params.has('error') && !params.has('error_code') && !params.has('error_description')
+  })
 
   useEffect(() => {
     if (!supabaseReady) {
@@ -150,6 +153,13 @@ function App() {
     return () => {
       active = false
       data.subscription.unsubscribe()
+    }
+  }, [])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('verified') === '1' && (params.has('error') || params.has('error_code') || params.has('error_description'))) {
+      setNotice({ type: 'error', text: 'That verification link may have expired. Request a fresh email and try again.' })
     }
   }, [])
 
