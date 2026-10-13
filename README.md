@@ -14,6 +14,8 @@ cp .env.example .env
 
 Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `frontend/.env`, using your Supabase project URL and publishable key (or legacy anon key). Never put a service-role/secret key in browser code.
 
+Set `VITE_SITE_URL` to the canonical public HTTPS origin, `https://hypervision-registration-page.vercel.app`. Keep it pointed at the deployed site even during local development; the signup confirmation and password-reset links intentionally do not use the current browser origin, so they never send users to localhost.
+
 ```bash
 npm run dev
 ```
@@ -24,8 +26,8 @@ The migrations in `supabase/migrations/` create `public.profiles`, enable row-le
 
 In Supabase Dashboard → Authentication → URL Configuration:
 
-- Set **Site URL** to your deployed frontend's canonical URL.
-- Add your actual local and production frontend URLs to **Redirect URLs**.
+- Set **Site URL** to `https://hypervision-registration-page.vercel.app` (or your canonical production domain). Do not leave it as `http://localhost:3000`.
+- Add `https://hypervision-registration-page.vercel.app/**` to **Redirect URLs**. Add localhost only as a separate URL for local flows you explicitly intend to test.
 - Include the exact verification redirect target used by the app: `https://YOUR_DEPLOYED_HOST/?verified=1` for a root deployment, or the full app path plus `?verified=1` if your host serves it from a subpath. Replace the placeholder with your actual host. Also allow local development, such as `http://localhost:5173/**`.
 
 Under Authentication → Providers → Email, configure whether email confirmation is required. The registration flow redirects to `/?verified=1`; the page handles the Supabase callback before presenting the meme-style confirmation celebration. The confirmation screen is a UI easter egg, not an authentication or authorization check.
