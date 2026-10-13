@@ -591,7 +591,7 @@ export default function AshenShelf({ onChoose, renderAuthPanel, initialAuthMode 
         </div>
       )}
       <header className="ashen-header">
-        <div className="ashen-wordmark"><span className="ashen-mark"><Orbit size={18} /></span><span>HYPERVISION<span>.</span></span></div>
+        <div className="ashen-wordmark"><span className="ashen-mark"><img className="ashen-mark-image" src="/hypervision-mark.svg" alt="" /></span><span>HYPERVISION<span>.</span></span></div>
         <div className="ashen-header-meta"><span className="ashen-live-dot" /> THE IDENTITY ARCHIVE <span className="ashen-header-number">HV—01</span></div>
       </header>
 
