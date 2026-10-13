@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import PortalScene from './components/PortalScene.jsx'
 import AshenShelf from './components/AshenShelf.jsx'
+import AbyssLanding from './components/AbyssLanding.jsx'
 import { supabase, supabaseReady } from './lib/supabase'
 
 function PasswordField({ value, onChange, visible, setVisible, autoComplete = 'current-password', placeholder = 'At least 8 characters' }) {
@@ -377,50 +378,7 @@ function App() {
   if (showVerifiedPage && !recoveryFlow) return <VerifiedPage onContinue={leaveVerifiedPage} />
 
   if (user && !recoveryFlow) {
-    const displayName = profileName || user.user_metadata?.display_name || 'Explorer'
-    const initial = displayName.trim().charAt(0).toUpperCase() || 'H'
-    return (
-      <main className="portal-shell">
-        <div className="portal-grid" aria-hidden="true" />
-        <div className="portal-glow" />
-        <header className="portal-topbar">
-          <Brand />
-          <div className="topbar-right"><span className="system-status"><span /> SESSION ACTIVE</span><span className="topbar-index">HV—01</span></div>
-        </header>
-        <section className="dashboard">
-          <div className="dashboard-intro">
-            <span className="eyebrow"><span className="eyebrow-line" /> IDENTITY CONFIRMED / 001</span>
-            <h1>Well, hello<br /><span>{displayName}.</span></h1>
-            <p>Your orbit is stable. Your corner of Hypervision is ready when you are.</p>
-            <div className="dashboard-chips"><span><i /> AUTHENTICATED</span><span><ShieldCheck size={14} /> PROFILE PROTECTED</span></div>
-          </div>
-          <div className="dashboard-card">
-            <div className="dashboard-card-head"><span>YOUR IDENTITY</span><span className="live-tag"><i /> LIVE</span></div>
-            <div className="profile-avatar-wrap">
-              <div className="profile-avatar">{initial}</div>
-              <div className="avatar-orbit avatar-orbit-one" /><div className="avatar-orbit avatar-orbit-two" />
-              <div className="avatar-spark spark-one" /><div className="avatar-spark spark-two" />
-            </div>
-            <div className="profile-summary"><h2>{displayName}</h2><span>{user.email}</span></div>
-            <div className="profile-divider" />
-            <form className="profile-form" onSubmit={saveProfile}>
-              <label className="field-group">
-                <span className="field-label">DISPLAY NAME <span className="field-hint">2–80 CHARACTERS</span></span>
-                <div className="input-wrap"><UserRound size={17} /><input value={profileName} onChange={(event) => setProfileName(event.target.value)} placeholder="Your name" minLength={2} maxLength={80} required disabled={profileLoading || profileSaving} /></div>
-              </label>
-              <button className="submit-button" type="submit" disabled={profileLoading || profileSaving}>
-                <span>{profileLoading ? 'Loading profile…' : profileSaving ? 'Saving changes…' : 'Save changes'}</span>{profileSaving ? <span className="button-spinner" /> : <Check size={17} />}
-              </button>
-            </form>
-            <Notice notice={notice} />
-            <button className="signout-button" type="button" onClick={signOut} disabled={busy}>{busy ? 'Closing session…' : 'Sign out of Hypervision'} <LogOut size={16} /></button>
-            <div className="card-foot"><ShieldCheck size={14} /><span>POWERED BY SUPABASE AUTH</span><span className="foot-divider" /><span>YOUR DATA, YOURS</span></div>
-          </div>
-          <div className="dashboard-orbit-scene"><PortalScene /></div>
-        </section>
-        <footer className="page-footer"><span>HYPERVISION / IDENTITY SYSTEMS</span><span>THE NEXT CHAPTER IS YOURS <ArrowDownRight size={13} /></span></footer>
-      </main>
-    )
+    return <AbyssLanding />
   }
 
   const isSignup = mode === 'signup'
