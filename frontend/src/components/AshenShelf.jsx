@@ -149,12 +149,12 @@ function paintPage(THREE, volume) {
   paper.lineWidth = 1
   paper.strokeRect(54, 54, 792, 1292)
 
-  paper.fillStyle = '#5b4025'
+  paper.fillStyle = '#000000'
   paper.font = '500 18px ui-monospace, monospace'
   paper.textAlign = 'left'
   paper.fillText('H Y P E R V I S I O N', 102, 103)
   paper.textAlign = 'right'
-  paper.fillStyle = 'rgba(83,59,32,.9)'
+  paper.fillStyle = '#000000'
   paper.font = '400 15px ui-monospace, monospace'
   paper.fillText(volume.id === 'register' ? 'FOLIO 01' : 'FOLIO 02', 798, 103)
 
@@ -180,8 +180,8 @@ function paintPage(THREE, volume) {
 
   const glyphs = []
   let sequence = 0
-  const ink = '#21170f'
-  const goldInk = '#684823'
+  const ink = '#000000'
+  const goldInk = '#000000'
   const addLine = (text, x, y, font, color) => {
     ctx.font = font
     let cursorX = x
@@ -241,7 +241,7 @@ function paintPage(THREE, volume) {
   paper.stroke()
   paper.textAlign = 'left'
   paper.font = '400 14px ui-monospace, monospace'
-  paper.fillStyle = 'rgba(63,43,25,.9)'
+  paper.fillStyle = '#000000'
   paper.fillText('THE IDENTITY ARCHIVE', 104, 1253)
   paper.textAlign = 'right'
   paper.fillText(volume.id === 'register' ? 'VOL. I  /  BEGIN' : 'VOL. II  /  RETURN', 798, 1253)
