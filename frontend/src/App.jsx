@@ -7,7 +7,6 @@ import {
   ChevronRight,
   Eye,
   EyeOff,
-  Fingerprint,
   LockKeyhole,
   Mail,
   Orbit,
@@ -15,7 +14,6 @@ import {
   Sparkles,
   UserRound,
   Zap,
-  Copy,
   LogOut,
 } from 'lucide-react'
 import PortalScene from './components/PortalScene.jsx'
@@ -69,7 +67,7 @@ function VerifiedPage({ onContinue }) {
       <div className="verified-glow verified-glow-one" />
       <div className="verified-glow verified-glow-two" />
       <div className="confetti-field" aria-hidden="true">
-        {confetti.map((index) => <i key={index} style={{ '--i': index }} />)}
+        {confetti.map((index) => <i key={index} style={{ '--i': index, left: (((index * 37) % 100) + '%'), top: (((index * 23) % 88) + '%'), '--delay': ((index % 9) * -0.23) + 's', '--rotation': (index * 17) + 'deg' }} />)}
       </div>
       <header className="topbar verified-topbar">
         <Brand />
@@ -292,7 +290,11 @@ function App() {
   const leaveVerifiedPage = () => {
     const url = new URL(window.location.href)
     url.searchParams.delete('verified')
-    window.history.replaceState({}, document.title, url.pathname + url.search + url.hash)
+    url.searchParams.delete('code')
+    url.searchParams.delete('error')
+    url.searchParams.delete('error_description')
+    url.hash = ''
+    window.history.replaceState({}, document.title, url.pathname + url.search)
     setShowVerifiedPage(false)
     setMode('login')
     setNotice({ type: 'success', text: 'Email confirmation complete. Welcome to Hypervision.' })
