@@ -1,0 +1,201 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Space+Grotesk:wght@400;500&display=swap');
+
+.abyss-landing {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  color: #eee8dc;
+  background: #050506;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.abyss-atmosphere {
+  position: absolute;
+  z-index: -1;
+  inset: -20%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(111, 82, 89, .16), transparent 42%),
+    radial-gradient(ellipse at 20% 80%, rgba(55, 56, 73, .16), transparent 42%),
+    linear-gradient(135deg, #08080b 0%, #080608 52%, #030304 100%);
+  animation: abyss-breathe 9s ease-in-out infinite alternate;
+}
+
+.abyss-opening {
+  position: relative;
+  z-index: 2;
+  width: min(100% - 48px, 1060px);
+  transform: translateY(-1vh);
+  opacity: 1;
+  text-align: center;
+  transition: opacity 1.15s ease, transform 1.4s cubic-bezier(.18,.7,.18,1), filter 1.15s ease;
+}
+
+.abyss-opening.is-leaving {
+  opacity: 0;
+  transform: translateY(-2vh) scale(.985);
+  filter: blur(5px);
+  pointer-events: none;
+}
+
+.abyss-opening-label {
+  margin: 0 0 clamp(28px, 5vh, 58px);
+  color: rgba(207, 188, 166, .58);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .28em;
+  line-height: 1.8;
+}
+
+.abyss-typewriter {
+  min-height: 2.5em;
+  margin: 0 auto;
+  color: #eee8dc;
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: clamp(36px, 6.3vw, 83px);
+  font-weight: 400;
+  letter-spacing: -.035em;
+  line-height: 1.12;
+  text-wrap: balance;
+  text-shadow: 0 0 48px rgba(211, 174, 158, .1);
+}
+
+.abyss-caret {
+  display: inline-block;
+  width: 1px;
+  height: .85em;
+  margin-left: .11em;
+  background: #cbb39b;
+  vertical-align: -.04em;
+  animation: abyss-caret-blink 850ms steps(2, start) infinite;
+}
+
+.abyss-film {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #050506;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.5s ease;
+  outline: none;
+}
+
+.abyss-film.is-revealed {
+  opacity: 1;
+}
+
+.abyss-index {
+  position: absolute;
+  z-index: 3;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  left: clamp(24px, 4vw, 62px);
+  color: rgba(238, 232, 220, .36);
+  font-size: 9px;
+  letter-spacing: .2em;
+  transition: opacity .65s ease;
+  pointer-events: none;
+}
+
+.abyss-landing:has(.abyss-film.is-revealed) .abyss-index {
+  opacity: 0;
+}
+
+.abyss-audio-gate {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  min-width: 210px;
+  flex-direction: column;
+  align-items: center;
+  gap: 11px;
+  padding: 22px 30px;
+  color: #f1e8dc;
+  background: rgba(7, 7, 9, .72);
+  border: 1px solid rgba(238, 220, 198, .24);
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  backdrop-filter: blur(16px);
+  transition: background .25s ease, border-color .25s ease;
+}
+
+.abyss-audio-gate:hover {
+  background: rgba(24, 20, 22, .88);
+  border-color: rgba(238, 220, 198, .5);
+}
+
+.abyss-audio-gate-mark {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 30px;
+  line-height: 1;
+}
+
+.abyss-audio-gate > span:nth-child(2) {
+  font-size: 10px;
+  letter-spacing: .22em;
+}
+
+.abyss-audio-gate small {
+  color: rgba(241, 232, 220, .56);
+  font-size: 10px;
+  letter-spacing: .06em;
+}
+
+.abyss-reel-missing {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 12%;
+  width: min(86vw, 340px);
+  padding: 22px 24px;
+  color: #eee8dc;
+  text-align: center;
+  background: rgba(5, 5, 6, .74);
+  border-top: 1px solid rgba(238, 220, 198, .28);
+  transform: translateX(-50%);
+  backdrop-filter: blur(12px);
+}
+
+.abyss-reel-missing span {
+  color: rgba(207, 188, 166, .68);
+  font-size: 9px;
+  letter-spacing: .25em;
+}
+
+.abyss-reel-missing p {
+  margin: 10px 0 0;
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 21px;
+}
+
+@keyframes abyss-caret-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes abyss-breathe {
+  from { transform: scale(1); opacity: .8; }
+  to { transform: scale(1.06); opacity: 1; }
+}
+
+@media (max-width: 600px) {
+  .abyss-opening { width: min(100% - 40px, 1060px); }
+  .abyss-opening-label { margin-bottom: 30px; font-size: 8px; letter-spacing: .2em; }
+  .abyss-typewriter { font-size: clamp(35px, 10vw, 58px); line-height: 1.16; }
+  .abyss-index { left: 20px; bottom: max(18px, env(safe-area-inset-bottom)); font-size: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .abyss-atmosphere, .abyss-caret { animation: none; }
+  .abyss-opening, .abyss-film { transition-duration: .01ms; }
+}
