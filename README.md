@@ -26,7 +26,7 @@ In Supabase Dashboard → Authentication → URL Configuration:
 
 - Set **Site URL** to your deployed frontend's canonical URL.
 - Add your actual local and production frontend URLs to **Redirect URLs**.
-- Include the exact verification redirect target used by the app, `https://YOUR_DEPLOYED_HOST/?verified=1` (replace `YOUR_DEPLOYED_HOST` with your actual host). Also allow the origin used by local development, such as `http://localhost:5173/**`.
+- Include the exact verification redirect target used by the app: `https://YOUR_DEPLOYED_HOST/?verified=1` for a root deployment, or the full app path plus `?verified=1` if your host serves it from a subpath. Replace the placeholder with your actual host. Also allow local development, such as `http://localhost:5173/**`.
 
 Under Authentication → Providers → Email, configure whether email confirmation is required. The registration flow redirects to `/?verified=1`; the page handles the Supabase callback before presenting the meme-style confirmation celebration. The confirmation screen is a UI easter egg, not an authentication or authorization check.
 
@@ -41,4 +41,4 @@ RLS ensures signed-in users can only read or edit their own profile, and authent
 
 ## Hosting notes
 
-The Vite asset base is relative so the production build works from a custom domain or a static host subpath. Configure your hosting platform to serve `frontend/dist` and provide SPA fallback to `index.html` for the root callback URL.
+The Vite asset base and verification callback preserve the app path, so the production build can work from a custom domain or static-host subpath. Configure your hosting platform to serve `frontend/dist` and provide SPA fallback to `index.html` for the verification callback URL.
