@@ -44,7 +44,7 @@ function PasswordField({ value, onChange, visible, setVisible, autoComplete = 'c
 function Brand({ compact = false }) {
   return (
     <a className="wordmark" href={window.location.pathname || '/'} aria-label="Hypervision home">
-      <span className="brand-symbol"><Orbit size={21} strokeWidth={1.65} /></span>
+      <span className="brand-symbol"><img className="brand-symbol-img" src="/hypervision-mark.svg" alt="" /></span>
       <span>HYPERVISION<span className="brand-period">.</span></span>
       {!compact && <span className="brand-edition">A NEW PERSPECTIVE</span>}
     </a>
