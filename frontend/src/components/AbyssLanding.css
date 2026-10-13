@@ -4,6 +4,9 @@
   position: fixed;
   inset: 0;
   z-index: 100;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   isolation: isolate;
   display: grid;
@@ -111,6 +114,98 @@
   }
 }
 
+
+/* A cinematic transition layer hides Vimeo's blank startup frame. */
+.abyss-video-curtain {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(111, 82, 89, .2), transparent 43%),
+    radial-gradient(ellipse at 20% 80%, rgba(55, 56, 73, .14), transparent 42%),
+    linear-gradient(135deg, #08080b 0%, #080608 52%, #030304 100%);
+  transition: opacity 720ms cubic-bezier(.2,.65,.25,1);
+}
+
+.abyss-video-curtain.is-visible,
+.abyss-video-curtain.is-clearing {
+  visibility: visible;
+}
+
+.abyss-video-curtain.is-visible {
+  opacity: 1;
+}
+
+.abyss-video-curtain.is-clearing {
+  opacity: 0;
+}
+
+.abyss-curtain-copy {
+  width: min(100%, 960px);
+  text-align: center;
+  transform: translateY(-1vh);
+}
+
+.abyss-curtain-label {
+  margin: 0 0 clamp(24px, 4vh, 44px);
+  color: rgba(207, 188, 166, .58);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .28em;
+  line-height: 1.8;
+}
+
+.abyss-curtain-message {
+  margin: 0;
+  color: #eee8dc;
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: clamp(34px, 5.8vw, 76px);
+  font-weight: 400;
+  letter-spacing: -.035em;
+  line-height: 1.12;
+  text-wrap: balance;
+  text-shadow: 0 0 48px rgba(211, 174, 158, .1);
+}
+
+.abyss-curtain-caret {
+  display: inline-block;
+  width: 1px;
+  height: .85em;
+  margin-left: .13em;
+  background: #cbb39b;
+  vertical-align: -.04em;
+  animation: abyss-caret-blink 850ms steps(2, start) infinite;
+}
+
+.abyss-signal-line {
+  width: clamp(68px, 8vw, 104px);
+  height: 1px;
+  margin: clamp(26px, 4vh, 42px) auto 0;
+  overflow: hidden;
+  background: rgba(203, 179, 155, .18);
+}
+
+.abyss-signal-line span {
+  display: block;
+  width: 34%;
+  height: 100%;
+  background: rgba(203, 179, 155, .8);
+  animation: abyss-signal-sweep 1.8s ease-in-out infinite;
+}
+
+@keyframes abyss-signal-sweep {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(420%); }
+}
+
 .abyss-index {
   position: absolute;
   z-index: 3;
@@ -211,14 +306,49 @@
   .abyss-opening { width: min(100% - 40px, 1060px); }
   .abyss-opening-label { margin-bottom: 30px; font-size: 8px; letter-spacing: .2em; }
   .abyss-typewriter { font-size: clamp(35px, 10vw, 58px); line-height: 1.16; }
+  .abyss-curtain-label { font-size: 8px; letter-spacing: .2em; margin-bottom: 30px; }
+  .abyss-curtain-message { font-size: clamp(34px, 10vw, 58px); }
   .abyss-index { left: 20px; bottom: max(18px, env(safe-area-inset-bottom)); font-size: 8px; }
+  .abyss-fullscreen { right: 20px; bottom: max(18px, env(safe-area-inset-bottom)); width: 40px; height: 40px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .abyss-atmosphere, .abyss-caret { animation: none; }
+  .abyss-atmosphere, .abyss-caret, .abyss-curtain-caret, .abyss-signal-line span { animation: none; }
   .abyss-opening, .abyss-film { transition-duration: .01ms; }
 }
 
+
+
+.abyss-fullscreen {
+  position: absolute;
+  z-index: 6;
+  right: clamp(20px, 4vw, 58px);
+  bottom: max(22px, env(safe-area-inset-bottom));
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  padding: 0;
+  color: rgba(238, 232, 220, .78);
+  background: rgba(7, 7, 9, .48);
+  border: 1px solid rgba(238, 220, 198, .22);
+  border-radius: 2px;
+  font-family: 'Space Grotesk', sans-serif;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  transition: color .2s ease, background .2s ease, border-color .2s ease;
+}
+
+.abyss-fullscreen:hover {
+  color: #fff4e8;
+  background: rgba(35, 26, 28, .82);
+  border-color: rgba(238, 220, 198, .52);
+}
+
+.abyss-fullscreen span {
+  font-size: 23px;
+  line-height: 1;
+}
 
 .abyss-logout {
   position: absolute;
