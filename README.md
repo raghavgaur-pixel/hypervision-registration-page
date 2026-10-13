@@ -22,6 +22,14 @@ npm run dev
 
 ## Supabase setup
 
+### Production email redirects and recovery limits
+
+For production auth, keep the **Site URL** at `https://hypervision-registration-page.vercel.app` in Supabase Dashboard → Authentication → URL Configuration. Add `https://hypervision-registration-page.vercel.app/**` to Redirect URLs (and add any local development URL separately only if you intentionally need local auth callbacks). The frontend's `VITE_SITE_URL` is pinned to the canonical HTTPS origin and the signup/recovery calls pass explicit production redirect URLs.
+
+In **Authentication → Email Templates**, check both **Confirm signup** and **Reset Password**. Their email links should use Supabase's `{{ .ConfirmationURL }}` variable so the redirect passed by the frontend is preserved. Do not construct the actual email link from `{{ .SiteURL }}` alone; if the Site URL is still localhost, that can send users to localhost despite correct frontend code.
+
+The built-in Supabase email sender has a low project-wide quota (currently documented as 2 emails per hour). Genuine password-reset requests can therefore be rate-limited after testing. The frontend now distinguishes an email-sender quota from a short security cooldown. For production testing and reliable recovery email delivery, configure a custom SMTP provider in Supabase **Authentication → SMTP Settings**. Do not bypass the rate limit by rapidly retrying requests.
+
 The migrations in `supabase/migrations/` create `public.profiles`, enable row-level security, restrict access to the profile owner, and create a profile when a user signs up. The security migrations must be applied in order; they have been applied to the connected Hypervision Supabase project.
 
 In Supabase Dashboard → Authentication → URL Configuration:
