@@ -218,13 +218,40 @@ function App() {
     return score
   }, [password])
 
-  const friendlyError = (message) => {
-    const value = message?.toLowerCase() ?? ''
+  const friendlyError = (errorOrMessage) => {
+    const message = typeof errorOrMessage === 'string'
+      ? errorOrMessage
+      : errorOrMessage?.message ?? ''
+    const value = message.toLowerCase()
+    const code = String(errorOrMessage?.code ?? '').toLowerCase()
+    const status = Number(errorOrMessage?.status ?? errorOrMessage?.statusCode)
+
     if (value.includes('invalid login credentials')) return 'That email and password do not match. Try again.'
     if (value.includes('already registered') || value.includes('user already registered')) return 'An account with this email already exists. Try signing in instead.'
     if (value.includes('password should be at least') || value.includes('password is too short')) return 'Your password needs at least 8 characters.'
     if (value.includes('email not confirmed')) return 'Your email still needs verifying. Check your inbox for the confirmation link.'
-    if (value.includes('rate limit') || value.includes('too many requests')) return 'A few too many attempts. Take a breath and try again shortly.'
+
+    // Supabase's built-in email sender has a strict project-wide quota. This
+    // can happen on a genuine recovery request; it is not proof of user abuse.
+    if (
+      value.includes('email rate limit exceeded') ||
+      value.includes('over_email_send_rate_limit') ||
+      code.includes('over_email_send_rate_limit')
+    ) {
+      return 'Supabase has reached its current email-sending quota. Your request can still be genuine; please wait for the quota to reset. For reliable delivery, configure custom SMTP in Supabase.'
+    }
+
+    // Supabase also applies a short per-account cooldown to recovery requests.
+    if (value.includes('for security purposes') && (value.includes('request this after') || value.includes('seconds'))) {
+      const seconds = value.match(/(\\d+)\\s*seconds?/)?.[1]
+      return seconds
+        ? `For account security, wait about ${seconds} second${seconds === '1' ? '' : 's'} before requesting another email.`
+        : 'For account security, this request is on a short cooldown. Wait a moment before requesting another email.'
+    }
+
+    if (value.includes('rate limit') || value.includes('too many requests') || status === 429) {
+      return 'The authentication service is temporarily rate-limiting this request. This can happen on a valid request; please wait before retrying. Repeated clicks will not send the email sooner.'
+    }
     if (value.includes('fetch') || value.includes('network')) return 'Could not reach the authentication service. Check your connection and try again.'
     if (value.includes('email address') && value.includes('invalid')) return 'That email address does not look valid. Check it and try again.'
     return 'Something unexpected happened. Please try again.'
@@ -344,7 +371,7 @@ function App() {
           document.exitFullscreen().catch(() => {})
         }
       }
-      setNotice({ type: 'error', text: friendlyError(error.message) })
+      setNotice({ type: 'error', text: friendlyError(error) })
     } finally {
       setBusy(false)
     }
@@ -392,7 +419,7 @@ function App() {
     setBusy(true)
     const { error } = await supabase.auth.signOut()
     setBusy(false)
-    if (error) setNotice({ type: 'error', text: friendlyError(error.message) })
+    if (error) setNotice({ type: 'error', text: friendlyError(error) })
     else {
       setNotice({ type: 'success', text: 'Signed out safely. The portal will be here when you return.' })
       setMode('login')
