@@ -41,7 +41,7 @@ function PasswordField({ value, onChange, visible, setVisible, autoComplete = 'c
 
 function Brand({ compact = false }) {
   return (
-    <a className="wordmark" href="/" aria-label="Hypervision home">
+    <a className="wordmark" href={window.location.pathname || '/'} aria-label="Hypervision home">
       <span className="brand-symbol"><Orbit size={21} strokeWidth={1.65} /></span>
       <span>HYPERVISION<span className="brand-period">.</span></span>
       {!compact && <span className="brand-edition">A NEW PERSPECTIVE</span>}
@@ -251,7 +251,9 @@ function App() {
     setBusy(true)
     try {
       if (mode === 'signup') {
-        const redirectUrl = new URL(window.location.origin)
+        const redirectUrl = new URL(window.location.href)
+        redirectUrl.search = ''
+        redirectUrl.hash = ''
         redirectUrl.searchParams.set('verified', '1')
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
