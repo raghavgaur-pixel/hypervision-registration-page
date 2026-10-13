@@ -17,6 +17,7 @@ import {
   LogOut,
 } from 'lucide-react'
 import PortalScene from './components/PortalScene.jsx'
+import AshenShelf from './components/AshenShelf.jsx'
 import { supabase, supabaseReady } from './lib/supabase'
 
 function PasswordField({ value, onChange, visible, setVisible, autoComplete = 'current-password', placeholder = 'At least 8 characters' }) {
@@ -105,6 +106,11 @@ function VerifiedPage({ onContinue }) {
 
 function App() {
   const [mode, setMode] = useState('signup')
+  const [showShelf, setShowShelf] = useState(() => {
+    const params = new URLSearchParams(window.location.search)
+    const hash = window.location.hash
+    return !params.has('verified') && !params.has('code') && !params.has('token_hash') && !params.has('type') && !params.has('error') && !params.has('error_code') && !params.has('error_description') && !hash.includes('type=recovery')
+  })
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -417,6 +423,16 @@ function App() {
     )
   }
 
+  if (showShelf && !user && !recoveryFlow && !showVerifiedPage) {
+    return <AshenShelf onChoose={(nextMode) => {
+      setMode(nextMode)
+      setShowShelf(false)
+      setNotice(null)
+      setPassword('')
+      setConfirmPassword('')
+    }} />
+  }
+
   const isSignup = mode === 'signup'
   const isReset = mode === 'reset'
   const isUpdatePassword = mode === 'update-password'
@@ -525,6 +541,7 @@ function App() {
                 <button type="button" onClick={() => changeMode(isSignup ? 'login' : 'signup')}>{isSignup ? 'Sign in instead' : 'Create an account'} <ChevronRight size={14} /></button>
               </div>
             )}
+            {!isUpdatePassword && <button className="back-link shelf-return" type="button" onClick={() => { setShowShelf(true); setNotice(null) }}><ArrowLeft size={15} /> Return to the shelf</button>}
             <div className="card-foot"><ShieldCheck size={14} /><span>SECURED BY SUPABASE</span><span className="foot-divider" /><span>YOUR DATA, YOURS</span></div>
           </div>
           <div className="form-side-note"><Zap size={13} /><span>Designed for the next version of you.</span></div>
