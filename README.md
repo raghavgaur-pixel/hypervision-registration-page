@@ -1,38 +1,32 @@
 # Hypervision
 
-A cinematic authentication experience built with React, Vite, Three.js, and a Python FastAPI backend. Supabase handles authentication and user identity.
+A dark glassmorphism authentication experience built with React, Vite, and Supabase. There is no custom application backend: Supabase Auth handles identity and Postgres stores user profiles with row-level security.
 
-## Stack
-
-- React and Vite
-- Three.js animated 3D environment
-- Supabase Auth
-- Python and FastAPI
-
-## Frontend setup
+## Run locally
 
 ```bash
 cd frontend
 npm install
 cp .env.example .env
+```
+
+Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `frontend/.env`, using your Supabase project URL and publishable key (or legacy anon key). Never put a service-role/secret key in browser code.
+
+```bash
 npm run dev
 ```
 
-Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `frontend/.env`.
+## Supabase setup
 
-## Backend setup
+The migration at `supabase/migrations/20261013000000_create_secure_user_profiles.sql` creates `public.profiles`, enables row-level security, restricts rows to their owner, and automatically creates a profile when a user signs up. It has already been applied to the connected Hypervision Supabase project.
 
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-uvicorn main:app --reload --port 8000
-```
+In Supabase Dashboard → Authentication → URL Configuration, set the Site URL to your deployed site and add `http://localhost:5173/**` plus your production URL to Redirect URLs. In Authentication → Providers → Email, configure whether email confirmation is required.
 
-Set `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `FRONTEND_ORIGIN` in `backend/.env`.
+## Profile table
 
-The frontend uses Supabase Auth for sign-up, sign-in, sign-out, and password recovery. The FastAPI service exposes a health endpoint and a protected identity endpoint that validates the caller's access token with Supabase.
+- `id`: UUID foreign key to `auth.users`, deleted with the auth user
+- `display_name`: editable name, max 80 characters
+- `avatar_url`: optional avatar URL
+- `created_at` / `updated_at`: timestamps
 
-In Supabase, configure the site URL and allowed redirect URLs for your local frontend and production domain. Email confirmation behavior is controlled by your Supabase Auth settings.
+RLS ensures signed-in users can only read or edit their own profile. Do not disable RLS or expose a service-role key in the frontend.
