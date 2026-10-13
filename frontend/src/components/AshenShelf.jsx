@@ -163,7 +163,7 @@ function wovenMaterial(THREE, map, roughness = 0.7) {
   const material = new THREE.MeshPhysicalMaterial({ color: 0xffffff, map, roughness, metalness: 0.08, clearcoat: 0.16, clearcoatRoughness: 0.68 })
   material.onBeforeCompile = (shader) => {
     shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nfloat hvWeave(vec2 p) { return sin(p.x * 760.0) * sin(p.y * 940.0); }')
-    shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\nfloat weave = hvWeave(vUv) * 0.018; diffuseColor.rgb *= 0.985 + weave;')
+    shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\nfloat weave = hvWeave(vMapUv) * 0.018; diffuseColor.rgb *= 0.985 + weave;')
   }
   material.customProgramCacheKey = () => 'hypervision-ashen-weave-r1'
   return material
@@ -375,7 +375,7 @@ export default function AshenShelf({ onChoose }) {
         const coverMat = rememberMaterial(new THREE.MeshPhysicalMaterial({ map: coverTexture, roughness: 0.38, metalness: 0.12, clearcoat: 0.6, clearcoatRoughness: 0.29 }))
         coverMat.onBeforeCompile = (shader) => {
           shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nfloat hvCoverGrain(vec2 p) { return sin(p.x * 670.0) * sin(p.y * 830.0); }')
-          shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\nfloat hvGrain = hvCoverGrain(vUv) * 0.012; diffuseColor.rgb *= 0.99 + hvGrain;')
+          shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\nfloat hvGrain = hvCoverGrain(vMapUv) * 0.012; diffuseColor.rgb *= 0.99 + hvGrain;')
         }
         coverMat.customProgramCacheKey = () => 'hypervision-ashen-cover-r1'
         const hinge = new THREE.Group()
@@ -574,7 +574,7 @@ export default function AshenShelf({ onChoose }) {
 
       <div className="ashen-scene-caption"><span>01 / 02</span><span>HOVER TO LIFT · SELECT TO OPEN</span><ArrowDownRight size={15} /></div>
 
-      <section className={'ashen-detail ' + (selectedVolume ? 'is-open' : '')} aria-live="polite" aria-hidden={!selectedVolume}>
+      <section className={'ashen-detail ' + (selectedVolume ? 'is-open' : '')} aria-live="polite" aria-hidden={!selectedVolume} inert={!selectedVolume}>
         <div className="ashen-detail-top"><span>{selectedVolume?.meta || 'IDENTITY ARCHIVE'}</span><button type="button" aria-label="Close book details" onClick={closeDetails}><span>×</span></button></div>
         <div className="ashen-paper-seal"><Orbit size={20} strokeWidth={1.4} /></div>
         <h2>{selectedVolume?.id === 'login' ? <>Return to<br /><em>your orbit.</em></> : <>A beginning<br /><em>of your own.</em></>}</h2>
