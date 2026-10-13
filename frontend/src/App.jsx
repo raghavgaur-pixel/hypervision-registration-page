@@ -264,6 +264,16 @@ function App() {
           },
         })
         if (error) throw error
+
+        // Supabase intentionally obfuscates duplicate sign-ups when email confirmation is enabled.
+        // A confirmed account can come back with an empty identities array and no error.
+        if (data.user?.identities?.length === 0) {
+          setNotice({ type: 'error', text: 'An account with this email already exists. Switch to Sign in to continue.' })
+          setPassword('')
+          setConfirmPassword('')
+          return
+        }
+
         if (data.session) {
           setNotice({ type: 'success', text: 'Your account is ready. Welcome to Hypervision.' })
         } else {
