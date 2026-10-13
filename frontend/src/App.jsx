@@ -111,11 +111,11 @@ function App() {
       return
     }
     try {
-      const { error } = await supabase.from('profiles').upsert({
-        id: user.id,
-        display_name: cleanName,
-        updated_at: new Date().toISOString(),
-      })
+      // The signup trigger creates the profile. Update only the user-editable
+      // column; the database owns the profile ID and updated_at timestamp.
+      const { error } = await supabase.from('profiles')
+        .update({ display_name: cleanName })
+        .eq('id', user.id)
       if (error) throw error
       const { error: metadataError } = await supabase.auth.updateUser({ data: { display_name: cleanName } })
       if (metadataError) throw metadataError
@@ -156,7 +156,7 @@ function App() {
     if (value.includes('email not confirmed')) return 'Your email still needs to be verified. Check your inbox for the confirmation link.'
     if (value.includes('rate limit') || value.includes('too many requests')) return 'A few too many attempts. Take a breath and try again shortly.'
     if (value.includes('fetch') || value.includes('network')) return 'Could not reach the authentication service. Check your connection and try again.'
-    return message || 'Something unexpected happened. Please try again.'
+    return 'Something unexpected happened. Please try again.'
   }
 
   const handleSubmit = async (event) => {
