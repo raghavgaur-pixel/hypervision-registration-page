@@ -169,7 +169,7 @@ function wovenMaterial(THREE, map, roughness = 0.7) {
   return material
 }
 
-export default function AshenShelf({ onChoose }) {
+export default function AshenShelf({ onChoose, renderAuthPanel, initialAuthMode = null }) {
   const hostRef = useRef(null)
   const chooseRef = useRef(onChoose)
   const selectedRef = useRef(null)
@@ -177,16 +177,35 @@ export default function AshenShelf({ onChoose }) {
   const [selected, setSelected] = useState(null)
   const [hovered, setHovered] = useState(null)
   const [fallback, setFallback] = useState(false)
+  const [authOpen, setAuthOpen] = useState(Boolean(initialAuthMode))
   chooseRef.current = onChoose
 
   const selectVolume = (id) => {
     selectedRef.current = id
     setSelected(id)
+    setAuthOpen(false)
+  }
+  const openAuth = (mode) => {
+    const id = mode === 'login' ? 'login' : 'register'
+    selectedRef.current = id
+    setSelected(id)
+    setAuthOpen(true)
+    chooseRef.current?.(mode)
   }
   const closeDetails = () => {
+    if (authOpen) {
+      setAuthOpen(false)
+      return
+    }
     selectedRef.current = null
     setSelected(null)
   }
+  useEffect(() => {
+    if (!initialAuthMode) return
+    const id = initialAuthMode === 'login' ? 'login' : initialAuthMode === 'signup' ? 'register' : null
+    if (id) { selectedRef.current = id; setSelected(id) }
+    setAuthOpen(true)
+  }, [initialAuthMode])
   const selectedVolume = VOLUMES.find((volume) => volume.id === selected)
 
   useEffect(() => {
@@ -467,6 +486,7 @@ export default function AshenShelf({ onChoose }) {
         if (hit && selectedRef.current !== hit) {
           selectedRef.current = hit
           setSelected(hit)
+          setAuthOpen(false)
         }
       }
       const onPointerLeave = () => {
@@ -476,6 +496,10 @@ export default function AshenShelf({ onChoose }) {
         }
       }
       const onKeyDown = (event) => {
+        if (event.key === 'Escape' && authOpen) {
+          setAuthOpen(false)
+          return
+        }
         if (event.key === 'Escape' && selectedRef.current) {
           selectedRef.current = null
           setSelected(null)
@@ -509,8 +533,8 @@ export default function AshenShelf({ onChoose }) {
           const compact = host.clientWidth < 600
           const targetX = chosen
             ? compact
-              ? isChosen ? (book.id === 'register' ? -0.3 : 0.3) : (chosen === 'register' ? 0.5 : -0.5)
-              : isChosen ? (book.id === 'register' ? -0.24 : 0.72) : (chosen === 'register' ? 0.94 : -1.03)
+              ? isChosen ? 0.2 : -0.45
+              : isChosen ? 0.86 : -1.12
             : book.baseX
           const targetY = book.baseY + (isHovered ? 0.065 : 0) + (isChosen ? 0.055 : 0)
           const targetZ = book.baseZ + (isChosen ? (compact ? 0.28 : 0.43) : isHovered ? 0.08 : 0)
@@ -577,15 +601,24 @@ export default function AshenShelf({ onChoose }) {
 
       <div className="ashen-scene-caption"><span>01 / 02</span><span>HOVER TO LIFT · SELECT TO OPEN</span><ArrowDownRight size={15} /></div>
 
-      <section className={'ashen-detail ' + (selectedVolume ? 'is-open' : '')} aria-live="polite" aria-hidden={!selectedVolume} inert={!selectedVolume}>
-        <div className="ashen-detail-top"><span>{selectedVolume?.meta || 'IDENTITY ARCHIVE'}</span><button type="button" aria-label="Close book details" onClick={closeDetails}><span>×</span></button></div>
-        <div className="ashen-paper-seal"><Orbit size={20} strokeWidth={1.4} /></div>
-        <h2>{selectedVolume?.id === 'login' ? <>Return to<br /><em>your orbit.</em></> : <>A beginning<br /><em>of your own.</em></>}</h2>
-        <p>{selectedVolume?.description || 'Choose a volume to begin.'}</p>
-        <button className="ashen-primary" type="button" onClick={() => selectedVolume && chooseRef.current?.(selectedVolume.authMode)}>
-          <span>{selectedVolume?.cta || 'Open volume'}</span><ArrowRight size={17} />
-        </button>
-        <div className="ashen-detail-foot"><Sparkles size={13} /><span>YOUR NEXT CHAPTER STARTS HERE</span></div>
+      <section className={'ashen-detail ' + ((selectedVolume || authOpen) ? 'is-open' : '') + (authOpen ? ' has-auth' : '')} aria-live="polite" aria-hidden={!selectedVolume && !authOpen} inert={!selectedVolume && !authOpen}>
+        <div className="ashen-detail-top">
+          <span>{authOpen ? (selectedVolume?.meta || 'IDENTITY ARCHIVE') : (selectedVolume?.meta || 'IDENTITY ARCHIVE')}</span>
+          <button type="button" aria-label={authOpen ? 'Close form and return to book details' : 'Close book details'} onClick={closeDetails}><span>×</span></button>
+        </div>
+        {authOpen && renderAuthPanel ? (
+          <div className="ashen-auth-content">{renderAuthPanel({ onModeChange: openAuth })}</div>
+        ) : (
+          <>
+            <div className="ashen-paper-seal"><Orbit size={20} strokeWidth={1.4} /></div>
+            <h2>{selectedVolume?.id === 'login' ? <>Return to<br /><em>your orbit.</em></> : <>A beginning<br /><em>of your own.</em></>}</h2>
+            <p>{selectedVolume?.description || 'Choose a volume to begin.'}</p>
+            <button className="ashen-primary" type="button" onClick={() => selectedVolume && openAuth(selectedVolume.authMode)}>
+              <span>{selectedVolume?.cta || 'Open volume'}</span><ArrowRight size={17} />
+            </button>
+            <div className="ashen-detail-foot"><Sparkles size={13} /><span>YOUR NEXT CHAPTER STARTS HERE</span></div>
+          </>
+        )}
       </section>
 
       <footer className="ashen-footer">
