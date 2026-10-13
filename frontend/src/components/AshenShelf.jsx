@@ -142,30 +142,30 @@ function paintPage(THREE, volume) {
     paper.fillRect(random() * 900, random() * 1400, 1 + random() * 2, 1 + random() * 2)
   }
 
-  paper.strokeStyle = 'rgba(130,94,53,.33)'
+  paper.strokeStyle = 'rgba(103,70,34,.46)'
   paper.lineWidth = 2
   paper.strokeRect(43, 43, 814, 1314)
-  paper.strokeStyle = 'rgba(130,94,53,.18)'
+  paper.strokeStyle = 'rgba(103,70,34,.28)'
   paper.lineWidth = 1
   paper.strokeRect(54, 54, 792, 1292)
 
-  paper.fillStyle = '#765937'
+  paper.fillStyle = '#5b4025'
   paper.font = '500 18px ui-monospace, monospace'
   paper.textAlign = 'left'
   paper.fillText('H Y P E R V I S I O N', 102, 103)
   paper.textAlign = 'right'
-  paper.fillStyle = 'rgba(118,89,55,.78)'
+  paper.fillStyle = 'rgba(83,59,32,.9)'
   paper.font = '400 15px ui-monospace, monospace'
   paper.fillText(volume.id === 'register' ? 'FOLIO 01' : 'FOLIO 02', 798, 103)
 
-  paper.strokeStyle = 'rgba(153,112,65,.6)'
+  paper.strokeStyle = 'rgba(119,79,37,.72)'
   paper.lineWidth = 1.5
   paper.beginPath()
   paper.moveTo(102, 142)
   paper.lineTo(798, 142)
   paper.stroke()
 
-  paper.strokeStyle = 'rgba(153,112,65,.5)'
+  paper.strokeStyle = 'rgba(119,79,37,.64)'
   paper.lineWidth = 2
   paper.beginPath()
   paper.arc(750, 205, 28, 0, Math.PI * 2)
@@ -180,8 +180,8 @@ function paintPage(THREE, volume) {
 
   const glyphs = []
   let sequence = 0
-  const ink = '#30251c'
-  const goldInk = '#89663c'
+  const ink = '#21170f'
+  const goldInk = '#684823'
   const addLine = (text, x, y, font, color) => {
     ctx.font = font
     let cursorX = x
@@ -233,7 +233,7 @@ function paintPage(THREE, volume) {
   nextY = addWrapped(secondParagraph, 104, nextY, 692, '400 28px Georgia, serif', 47, ink)
   addLine('“' + quote + '”', 104, 1080, 'italic 30px Georgia, serif', goldInk)
 
-  paper.strokeStyle = 'rgba(153,112,65,.58)'
+  paper.strokeStyle = 'rgba(119,79,37,.7)'
   paper.lineWidth = 1.5
   paper.beginPath()
   paper.moveTo(102, 1214)
@@ -241,7 +241,7 @@ function paintPage(THREE, volume) {
   paper.stroke()
   paper.textAlign = 'left'
   paper.font = '400 14px ui-monospace, monospace'
-  paper.fillStyle = 'rgba(85,64,43,.76)'
+  paper.fillStyle = 'rgba(63,43,25,.9)'
   paper.fillText('THE IDENTITY ARCHIVE', 104, 1253)
   paper.textAlign = 'right'
   paper.fillText(volume.id === 'register' ? 'VOL. I  /  BEGIN' : 'VOL. II  /  RETURN', 798, 1253)
