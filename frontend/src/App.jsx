@@ -190,6 +190,7 @@ function App() {
   const [user, setUser] = useState(null)
   const [booting, setBooting] = useState(true)
   const [apiStatus, setApiStatus] = useState('idle')
+  const [recoveryFlow, setRecoveryFlow] = useState(false)
 
   const verifyBackend = async (session) => {
     if (!session?.access_token) {
@@ -220,7 +221,11 @@ function App() {
       verifyBackend(data.session)
     })
 
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setRecoveryFlow(true)
+        setMode('update-password')
+      }
       setUser(session?.user ?? null)
       verifyBackend(session)
     })
@@ -305,6 +310,17 @@ function App() {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
         if (error) throw error
         setNotice({ type: 'success', text: 'You’re back. Welcome through the portal.' })
+      } else if (mode === 'update-password') {
+        if (password !== confirmPassword) throw new Error('Those passwords do not match yet.')
+        const { error } = await supabase.auth.updateUser({ password })
+        if (error) throw error
+        setRecoveryFlow(false)
+        await supabase.auth.signOut()
+        setUser(null)
+        setMode('login')
+        setPassword('')
+        setConfirmPassword('')
+        setNotice({ type: 'success', text: 'Your password has been updated. Sign in with your new password.' })
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
           redirectTo: window.location.origin,
@@ -340,7 +356,7 @@ function App() {
     )
   }
 
-  if (user) {
+  if (user && !recoveryFlow) {
     return (
       <main className="portal-shell">
         <Atmosphere />
@@ -365,6 +381,7 @@ function App() {
 
   const isSignup = mode === 'signup'
   const isReset = mode === 'reset'
+  const isUpdatePassword = mode === 'update-password'
 
   return (
     <main className="auth-shell">
@@ -414,11 +431,11 @@ function App() {
             </div>
 
             <div className="form-heading">
-              <h2>{isReset ? 'Find your way back.' : isSignup ? 'Create your orbit.' : 'Welcome back.'}</h2>
-              <p>{isReset ? 'We’ll send a secure link to reset your password.' : isSignup ? 'You were never meant to stay ordinary.' : 'Your place in the universe is still here.'}</p>
+              <h2>{isReset ? 'Find your way back.' : isUpdatePassword ? 'Choose a new key.' : isSignup ? 'Create your orbit.' : 'Welcome back.'}</h2>
+              <p>{isReset ? 'We’ll send a secure link to reset your password.' : isUpdatePassword ? 'Set a new password for your Hypervision identity.' : isSignup ? 'You were never meant to stay ordinary.' : 'Your place in the universe is still here.'}</p>
             </div>
 
-            {!isReset && (
+            {!isReset && !isUpdatePassword && (
               <div className="mode-switch" role="tablist" aria-label="Authentication mode">
                 <button type="button" role="tab" aria-selected={isSignup} className={isSignup ? 'active' : ''} onClick={() => changeMode('signup')}>Create account</button>
                 <button type="button" role="tab" aria-selected={!isSignup} className={!isSignup ? 'active' : ''} onClick={() => changeMode('login')}>Sign in</button>
@@ -440,7 +457,7 @@ function App() {
 
               {!isReset && (
                 <label className="field-group">
-                  <span className="field-label">PASSWORD <span className="field-hint">{isSignup ? 'MIN. 8 CHARACTERS' : <button type="button" className="text-button" onClick={() => changeMode('reset')}>Forgot password?</button>}</span></span>
+                  <span className="field-label">{isUpdatePassword ? 'NEW PASSWORD' : 'PASSWORD'} <span className="field-hint">{isSignup || isUpdatePassword ? 'MIN. 8 CHARACTERS' : <button type="button" className="text-button" onClick={() => changeMode('reset')}>Forgot password?</button>}</span></span>
                   <PasswordField value={password} onChange={setPassword} visible={showPassword} setVisible={setShowPassword} autoComplete={isSignup ? 'new-password' : 'current-password'} />
                   {isSignup && password.length > 0 && (
                     <div className="strength-meter" aria-label={`Password strength ${strength} out of 4`}>
@@ -451,7 +468,7 @@ function App() {
                 </label>
               )}
 
-              {isSignup && (
+              {(isSignup || isUpdatePassword) && (
                 <label className="field-group">
                   <span className="field-label">CONFIRM PASSWORD</span>
                   <PasswordField value={confirmPassword} onChange={setConfirmPassword} visible={showConfirmPassword} setVisible={setShowConfirmPassword} autoComplete="new-password" />
@@ -474,8 +491,8 @@ function App() {
               </button>
             </form>
 
-            {isReset ? (
-              <button className="back-link" type="button" onClick={() => changeMode('login')}><ArrowLeft size={15} /> Back to sign in</button>
+            {isReset || isUpdatePassword ? (
+              <button className="back-link" type="button" onClick={() => { setRecoveryFlow(false); changeMode('login') }}><ArrowLeft size={15} /> Back to sign in</button>
             ) : (
               <div className="switch-prompt">
                 <span>{isSignup ? 'Already have a place here?' : 'New to this universe?'}</span>
