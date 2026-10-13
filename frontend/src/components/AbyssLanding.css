@@ -350,6 +350,23 @@
   line-height: 1;
 }
 
+.abyss-fullscreen.needs-gesture {
+  display: inline-flex;
+  width: auto;
+  min-width: 154px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 13px;
+}
+
+.abyss-fullscreen.needs-gesture small {
+  font-size: 8px;
+  letter-spacing: .13em;
+  white-space: nowrap;
+}
+
 .abyss-logout {
   position: absolute;
   z-index: 6;
