@@ -24,3 +24,98 @@
 @media(max-width:900px){.ashen-intro{top:105px;left:24px;width:260px}.ashen-intro h1{font-size:clamp(43px,7vw,60px)}.ashen-lede{max-width:220px;font-size:11px}.ashen-scene-caption{right:22px;bottom:100px}.ashen-footer{min-height:78px;padding:12px 18px 16px;gap:10px}.ashen-footer-note,.ashen-footer-mark{display:none}.ashen-catalogue{width:100%;justify-content:center;gap:clamp(8px,4vw,30px)}.ashen-detail{width:min(360px,43vw);left:20px;padding:23px 34px 20px 24px}.ashen-detail h2{font-size:36px}}
 @media(max-width:600px){.ashen-header{height:65px;padding:0 17px}.ashen-wordmark{font-size:10px;gap:8px;letter-spacing:.15em}.ashen-mark{width:30px;height:30px}.ashen-header-meta{gap:6px;font-size:7px;letter-spacing:.09em}.ashen-header-number{margin-left:6px;padding-left:8px}.ashen-intro{top:92px;left:20px;width:250px}.ashen-kicker{margin-bottom:13px;font-size:7px}.ashen-intro h1{font-size:clamp(42px,11.5vw,56px)}.ashen-lede{max-width:205px;margin-top:12px;font-size:10px;line-height:1.65}.ashen-scene-caption{left:20px;right:auto;bottom:92px;gap:8px;font-size:6px}.ashen-footer{min-height:78px;padding:10px 8px 13px}.ashen-catalogue{gap:5px}.ashen-volume-tab{flex:1;justify-content:center;gap:8px;padding:8px 6px}.ashen-volume-number{flex-basis:29px;width:29px;height:29px;font-size:9px}.ashen-volume-tab small{font-size:6px;letter-spacing:.03em}.ashen-volume-tab strong{font-size:15px}.ashen-detail,.ashen-detail.is-open{top:auto;left:12px;right:12px;bottom:92px;width:auto;padding:17px 30px 16px 18px;transform:translateY(12px)}.ashen-detail.is-open{transform:translateY(0)}.ashen-detail-top{font-size:7px}.ashen-detail-top button{flex-basis:24px;width:24px;height:24px}.ashen-paper-seal{width:31px;height:31px;margin-top:10px}.ashen-paper-seal svg{width:16px;height:16px}.ashen-detail h2{margin:10px 0 8px;font-size:30px}.ashen-detail>p{margin-bottom:13px;font-size:10px;line-height:1.65}.ashen-primary{min-height:43px;font-size:10px}.ashen-detail-foot{margin-top:10px;font-size:6px}.ashen-fallback-books{top:36%;left:5%;right:5%;gap:12px}.ashen-fallback-book{width:min(39vw,170px);gap:13px;padding:11px;box-shadow:7px 9px 0 #110d09,12px 18px 30px rgba(0,0,0,.45)}.ashen-fallback-book span,.ashen-fallback-book small{font-size:5px}.ashen-fallback-book strong{font-size:clamp(17px,5vw,24px)}}
 @media(prefers-reduced-motion:reduce){.ashen-detail,.ashen-primary,.ashen-volume-tab{transition-duration:.01ms!important}}
+
+
+
+/* Embedded authentication: the form belongs to the torn-paper panel, never a second page. */
+.ashen-detail.has-auth,
+.ashen-detail.has-auth.is-open {
+  top: 50%;
+  width: min(480px, 39vw);
+  max-height: calc(100svh - 140px);
+  overflow-y: auto;
+  padding: 22px 40px 20px 28px;
+  transform: translateY(-50%) translateX(0);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(204,169,119,.45) rgba(0,0,0,.12);
+  clip-path: polygon(0 0,95.8% 0,97% 3%,96% 8%,100% 14%,97% 20%,99% 28%,96.5% 35%,100% 44%,97% 53%,99.5% 61%,96% 70%,100% 80%,97% 88%,98.5% 95%,95.5% 100%,0 100%);
+}
+.ashen-detail.has-auth .ashen-detail-top { margin-bottom: 3px; }
+.ashen-auth-content { min-width: 0; }
+.ashen-auth-panel { display: flex; flex-direction: column; gap: 13px; }
+.ashen-auth-heading { margin: 0 0 1px; }
+.ashen-auth-eyebrow { display: block; color: #b29b78; font: 7px/1.5 'DM Mono',monospace; letter-spacing: .13em; }
+.ashen-auth-heading h2 { margin: 11px 0 8px; color: #eee5d7; font: 400 clamp(30px,2.7vw,38px)/.96 'EB Garamond',Georgia,serif; letter-spacing: -.035em; }
+.ashen-auth-heading h2 em { color: #d4b27e; font-weight: 400; }
+.ashen-auth-heading p { max-width: 330px; margin: 0; color: rgba(223,213,196,.68); font-size: 10px; line-height: 1.65; }
+.ashen-auth-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border: 1px solid rgba(206,177,135,.16); background: rgba(0,0,0,.2); }
+.ashen-auth-mode button { min-height: 31px; border: 1px solid transparent; color: #938879; background: transparent; font: 8px 'DM Mono',monospace; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: color .2s,background .2s,border-color .2s; }
+.ashen-auth-mode button:hover { color: #e9ddc9; }
+.ashen-auth-mode button.active { color: #e7d1ab; border-color: rgba(212,178,126,.31); background: rgba(212,178,126,.09); }
+.ashen-auth-form { display: grid; gap: 10px; }
+.ashen-auth-field { display: grid; gap: 5px; min-width: 0; }
+.ashen-auth-field > span { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; color: #b1a18b; font: 7px/1.35 'DM Mono',monospace; letter-spacing: .1em; }
+.ashen-auth-field > span small { color: #6f695f; font-size: 6px; white-space: nowrap; }
+.ashen-auth-label-line { flex-wrap: wrap; }
+.ashen-auth-text-button { padding: 0; border: 0; color: #d3b27f; background: transparent; font: 7px 'DM Mono',monospace; cursor: pointer; }
+.ashen-auth-input { display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 39px; padding: 0 10px; border: 1px solid rgba(213,193,158,.18); color: #9c8a71; background: rgba(5,6,9,.5); transition: border-color .2s,box-shadow .2s,background .2s; }
+.ashen-auth-input:focus-within { border-color: rgba(212,178,126,.62); background: rgba(9,10,13,.82); box-shadow: 0 0 0 2px rgba(212,178,126,.07); }
+.ashen-auth-input > svg { flex: 0 0 auto; color: #a18a6b; }
+.ashen-auth-input input { width: 100%; min-width: 0; height: 37px; padding: 0; border: 0; outline: 0; color: #ede5d8; background: transparent; font: 10px 'Space Grotesk',sans-serif; }
+.ashen-auth-input input::placeholder { color: #6f6a63; }
+.ashen-auth-input input:focus-visible { outline: 0; }
+.ashen-auth-input input:-webkit-autofill,
+.ashen-auth-input input:-webkit-autofill:hover,
+.ashen-auth-input input:-webkit-autofill:focus { -webkit-text-fill-color: #ede5d8; box-shadow: 0 0 0 1000px #13120f inset; transition: background-color 9999s ease-out; }
+.ashen-auth-visibility { display: grid; place-items: center; flex: 0 0 22px; width: 22px; height: 24px; padding: 0; border: 0; color: #92816a; background: transparent; cursor: pointer; }
+.ashen-auth-visibility:hover { color: #e4c99c; }
+.ashen-auth-strength { display: flex; align-items: center; gap: 9px; margin-top: 1px; color: #8c806e; font: 7px 'DM Mono',monospace; }
+.ashen-auth-strength > div { display: flex; flex: 1; gap: 3px; }
+.ashen-auth-strength i { height: 2px; flex: 1; background: rgba(205,188,159,.14); }
+.ashen-auth-strength i.filled { background: #c9a874; box-shadow: 0 0 6px rgba(201,168,116,.26); }
+.ashen-auth-terms { display: flex; align-items: flex-start; gap: 8px; color: #958a7a; font-size: 8px; line-height: 1.55; }
+.ashen-auth-terms input { flex: 0 0 auto; margin: 2px 0 0; accent-color: #d4b27e; }
+.ashen-auth-terms a { color: #d8bd90; text-decoration: underline; text-underline-offset: 2px; }
+.ashen-auth-panel .notice { padding: 8px 9px; border-radius: 0; color: #c9bda9; font-size: 9px; }
+.ashen-auth-panel .notice.success { border-color: rgba(139,229,189,.23); background: rgba(97,194,155,.06); }
+.ashen-auth-panel .notice.error { border-color: rgba(255,143,161,.24); background: rgba(255,143,161,.055); }
+.ashen-auth-panel .notice-mark { width: 16px; height: 16px; border-radius: 2px; }
+.ashen-auth-submit { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 42px; margin-top: 1px; padding: 0 12px 0 14px; border: 1px solid rgba(221,187,135,.66); color: #17110a; background: linear-gradient(100deg,#d7b783,#bea071 72%,#d9bd8d); box-shadow: 0 8px 20px rgba(0,0,0,.19),inset 0 1px 0 rgba(255,255,255,.35); font-size: 9px; font-weight: 650; cursor: pointer; transition: transform .2s,filter .2s; }
+.ashen-auth-submit:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.07); }
+.ashen-auth-submit:active:not(:disabled) { transform: none; }
+.ashen-auth-submit:disabled { cursor: wait; opacity: .68; }
+.ashen-auth-spinner { width: 14px; height: 14px; border: 2px solid rgba(20,13,7,.22); border-top-color: #1b130a; border-radius: 50%; animation: ashen-auth-spin .75s linear infinite; }
+.ashen-auth-switch-copy { margin: 0; color: #908372; font-size: 8px; text-align: center; }
+.ashen-auth-switch-copy button,.ashen-auth-back { padding: 0; border: 0; color: #d4b27e; background: transparent; font: 8px 'DM Mono',monospace; cursor: pointer; }
+.ashen-auth-switch-copy button { margin-left: 3px; text-decoration: underline; text-underline-offset: 3px; }
+.ashen-auth-back { display: inline-flex; align-items: center; align-self: flex-start; gap: 6px; }
+.ashen-auth-foot { display: flex; align-items: center; gap: 7px; padding-top: 10px; border-top: 1px solid rgba(222,204,173,.12); color: #827767; font: 6px/1.4 'DM Mono',monospace; letter-spacing: .08em; }
+.ashen-auth-foot svg { color: #c9a875; flex: 0 0 auto; }
+@keyframes ashen-auth-spin { to { transform: rotate(360deg); } }
+
+@media(max-width:900px) {
+  .ashen-detail.has-auth,.ashen-detail.has-auth.is-open { width: min(450px, 48vw); max-height: calc(100svh - 124px); padding: 18px 34px 17px 23px; }
+  .ashen-auth-heading h2 { font-size: 33px; }
+}
+@media(max-width:600px) {
+  .ashen-detail.has-auth,.ashen-detail.has-auth.is-open { top: auto; left: 12px; right: 12px; bottom: 88px; width: auto; max-height: calc(100svh - 160px); padding: 14px 30px 14px 17px; transform: translateY(0); }
+  .ashen-detail.has-auth.is-open { transform: translateY(0); }
+  .ashen-auth-panel { gap: 10px; }
+  .ashen-auth-heading h2 { margin: 8px 0 6px; font-size: 29px; }
+  .ashen-auth-heading p { font-size: 9px; }
+  .ashen-auth-mode button { min-height: 28px; }
+  .ashen-auth-form { gap: 8px; }
+  .ashen-auth-input { min-height: 36px; }
+  .ashen-auth-input input { height: 34px; font-size: 10px; }
+  .ashen-auth-submit { min-height: 39px; }
+  .ashen-detail.has-auth .ashen-detail-top { margin-bottom: 0; }
+}
+@media(max-height:760px) and (min-width:601px) {
+  .ashen-detail.has-auth,.ashen-detail.has-auth.is-open { max-height: calc(100svh - 105px); padding-top: 15px; padding-bottom: 13px; }
+  .ashen-auth-panel { gap: 9px; }
+  .ashen-auth-heading h2 { margin-top: 7px; margin-bottom: 5px; font-size: 31px; }
+  .ashen-auth-heading p { line-height: 1.45; }
+  .ashen-auth-form { gap: 7px; }
+  .ashen-auth-input { min-height: 35px; }
+  .ashen-auth-input input { height: 33px; }
+}
