@@ -410,7 +410,7 @@ export default function AshenShelf({ onChoose }) {
         const height = Math.max(host.clientHeight, 1)
         renderer.setSize(width, height, false)
         camera.aspect = width / height
-        camera.position.z = width < 560 ? 6.3 : width < 850 ? 5.95 : 5.55
+        camera.position.z = width < 560 ? 9.3 : width < 850 ? 6.35 : 5.55
         camera.position.y = width < 560 ? 0.04 : 0.16
         camera.lookAt(width < 560 ? 0 : 0.05, -0.05, 0)
         camera.updateProjectionMatrix()
@@ -506,12 +506,15 @@ export default function AshenShelf({ onChoose }) {
         for (const book of books) {
           const isChosen = chosen === book.id
           const isHovered = hoveredRef.current === book.id
+          const compact = host.clientWidth < 600
           const targetX = chosen
-            ? isChosen ? (book.id === 'register' ? -0.24 : 0.72) : (chosen === 'register' ? 0.94 : -1.03)
+            ? compact
+              ? isChosen ? (book.id === 'register' ? -0.3 : 0.3) : (chosen === 'register' ? 0.5 : -0.5)
+              : isChosen ? (book.id === 'register' ? -0.24 : 0.72) : (chosen === 'register' ? 0.94 : -1.03)
             : book.baseX
           const targetY = book.baseY + (isHovered ? 0.065 : 0) + (isChosen ? 0.055 : 0)
-          const targetZ = book.baseZ + (isChosen ? 0.43 : isHovered ? 0.08 : 0)
-          const targetScale = isChosen ? 1.08 : isHovered ? 1.035 : 1
+          const targetZ = book.baseZ + (isChosen ? (compact ? 0.28 : 0.43) : isHovered ? 0.08 : 0)
+          const targetScale = isChosen ? (compact ? 1.04 : 1.08) : isHovered ? 1.035 : 1
           book.root.position.x = damp(book.root.position.x, targetX, 5.5, delta)
           book.root.position.y = damp(book.root.position.y, targetY, 5.5, delta)
           book.root.position.z = damp(book.root.position.z, targetZ, 5.5, delta)
