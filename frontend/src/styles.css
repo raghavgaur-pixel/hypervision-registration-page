@@ -395,3 +395,13 @@ button:disabled { cursor: wait; opacity: 0.65; }
   .portal-scene[data-fallback='true']::before, .portal-scene[data-fallback='true']::after { animation: none; }
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+
+/* Avoid iOS Safari's automatic focus zoom on small form controls. */
+@media (max-width: 680px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
