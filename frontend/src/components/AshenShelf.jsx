@@ -178,6 +178,8 @@ export default function AshenShelf({ onChoose, renderAuthPanel, initialAuthMode 
   const [hovered, setHovered] = useState(null)
   const [fallback, setFallback] = useState(false)
   const [authOpen, setAuthOpen] = useState(Boolean(initialAuthMode))
+  const authOpenRef = useRef(Boolean(initialAuthMode))
+  authOpenRef.current = authOpen
   chooseRef.current = onChoose
 
   const selectVolume = (id) => {
@@ -496,7 +498,7 @@ export default function AshenShelf({ onChoose, renderAuthPanel, initialAuthMode 
         }
       }
       const onKeyDown = (event) => {
-        if (event.key === 'Escape' && authOpen) {
+        if (event.key === 'Escape' && authOpenRef.current) {
           setAuthOpen(false)
           return
         }
