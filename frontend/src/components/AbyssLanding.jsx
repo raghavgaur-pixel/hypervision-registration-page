@@ -18,12 +18,27 @@ export default function AbyssLanding({ onSignOut, signingOut = false }) {
   const [playerPrimed, setPlayerPrimed] = useState(false)
   const [filmRevealed, setFilmRevealed] = useState(false)
   const [filmFrameReady, setFilmFrameReady] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [audioBlocked, setAudioBlocked] = useState(false)
   const [audioPromptDismissed, setAudioPromptDismissed] = useState(false)
   const iframeRef = useRef(null)
   const filmRevealedRef = useRef(false)
   const playingRef = useRef(false)
   const soundConfirmedRef = useRef(false)
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {})
+    } else if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {})
+    }
+  }
+
+  useEffect(() => {
+    const syncFullscreenState = () => setIsFullscreen(Boolean(document.fullscreenElement))
+    document.addEventListener('fullscreenchange', syncFullscreenState)
+    return () => document.removeEventListener('fullscreenchange', syncFullscreenState)
+  }, [])
 
   const postToPlayer = (method, value) => {
     const player = iframeRef.current?.contentWindow
@@ -199,6 +214,18 @@ export default function AbyssLanding({ onSignOut, signingOut = false }) {
           <div className="abyss-signal-line"><span /></div>
         </div>
       </div>
+
+      {filmRevealed && (
+        <button
+          type="button"
+          className="abyss-fullscreen"
+          onClick={toggleFullscreen}
+          aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
+          title={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
+        >
+          <span aria-hidden="true">⛶</span>
+        </button>
+      )}
 
       {filmRevealed && audioBlocked && !audioPromptDismissed && (
         <button type="button" className="abyss-audio-gate" onClick={beginWithSound}>
