@@ -19,6 +19,7 @@ export default function AbyssLanding({ onSignOut, signingOut = false }) {
   const [filmRevealed, setFilmRevealed] = useState(false)
   const [filmFrameReady, setFilmFrameReady] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [fullscreenNeedsGesture, setFullscreenNeedsGesture] = useState(false)
   const [audioBlocked, setAudioBlocked] = useState(false)
   const [audioPromptDismissed, setAudioPromptDismissed] = useState(false)
   const iframeRef = useRef(null)
@@ -30,12 +31,20 @@ export default function AbyssLanding({ onSignOut, signingOut = false }) {
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {})
     } else if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen().catch(() => {})
+      document.documentElement.requestFullscreen()
+        .then(() => setFullscreenNeedsGesture(false))
+        .catch(() => setFullscreenNeedsGesture(true))
+    } else {
+      setFullscreenNeedsGesture(true)
     }
   }
 
   useEffect(() => {
-    const syncFullscreenState = () => setIsFullscreen(Boolean(document.fullscreenElement))
+    const syncFullscreenState = () => {
+      const active = Boolean(document.fullscreenElement)
+      setIsFullscreen(active)
+      if (active) setFullscreenNeedsGesture(false)
+    }
     document.addEventListener('fullscreenchange', syncFullscreenState)
     return () => document.removeEventListener('fullscreenchange', syncFullscreenState)
   }, [])
@@ -151,6 +160,19 @@ export default function AbyssLanding({ onSignOut, signingOut = false }) {
   useEffect(() => {
     if (!filmRevealed) return undefined
 
+    // Best-effort request at the exact moment the video takes over. When the
+    // session was restored automatically, browsers may require a user click;
+    // the sign-in submit attempts fullscreen earlier under valid user activation.
+    if (!document.fullscreenElement) {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen()
+          .then(() => setFullscreenNeedsGesture(false))
+          .catch(() => setFullscreenNeedsGesture(true))
+      } else {
+        setFullscreenNeedsGesture(true)
+      }
+    }
+
     filmRevealedRef.current = true
     playingRef.current = false
     soundConfirmedRef.current = false
@@ -218,12 +240,13 @@ export default function AbyssLanding({ onSignOut, signingOut = false }) {
       {filmRevealed && (
         <button
           type="button"
-          className="abyss-fullscreen"
+          className={`abyss-fullscreen ${fullscreenNeedsGesture ? 'needs-gesture' : ''}`}
           onClick={toggleFullscreen}
           aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
           title={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
         >
           <span aria-hidden="true">⛶</span>
+          {fullscreenNeedsGesture && <small>ENTER FULL SCREEN</small>}
         </button>
       )}
 
