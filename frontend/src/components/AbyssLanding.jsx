@@ -7,12 +7,13 @@ const REVEAL_PAUSE_MS = 950
 const VIMEO_ORIGIN = 'https://player.vimeo.com'
 const VIMEO_PLAYER_URL = 'https://player.vimeo.com/video/790050266?autoplay=1&controls=0&muted=0&title=0&byline=0&portrait=0&dnt=1&playsinline=1&autopause=0'
 
-export default function AbyssLanding() {
+export default function AbyssLanding({ onSignOut, signingOut = false }) {
   const [visibleCharacters, setVisibleCharacters] = useState(0)
   const [typingDone, setTypingDone] = useState(false)
   const [filmRevealed, setFilmRevealed] = useState(false)
   const [audioBlocked, setAudioBlocked] = useState(false)
   const [playing, setPlaying] = useState(false)
+  const [audioPromptDismissed, setAudioPromptDismissed] = useState(false)
   const iframeRef = useRef(null)
   const playingRef = useRef(false)
 
@@ -75,6 +76,7 @@ export default function AbyssLanding() {
   }, [filmRevealed])
 
   const beginWithSound = () => {
+    setAudioPromptDismissed(true)
     const iframe = iframeRef.current
     if (!iframe?.contentWindow) return
     iframe.contentWindow.postMessage(JSON.stringify({ method: 'setVolume', value: 1 }), VIMEO_ORIGIN)
@@ -108,13 +110,24 @@ export default function AbyssLanding() {
         />
       )}
 
-      {filmRevealed && audioBlocked && !playing && (
+      {filmRevealed && audioBlocked && !playing && !audioPromptDismissed && (
         <button type="button" className="abyss-audio-gate" onClick={beginWithSound}>
           <span className="abyss-audio-gate-mark" aria-hidden="true">↗</span>
           <span>ENTER THE ABYSS</span>
           <small>Tap once to begin with sound</small>
         </button>
       )}
+
+      <button
+        type="button"
+        className="abyss-logout"
+        onClick={onSignOut}
+        disabled={signingOut}
+        aria-label={signingOut ? 'Signing out' : 'Log out of Hypervision'}
+      >
+        <span>{signingOut ? 'SIGNING OUT…' : 'LOG OUT'}</span>
+        <span aria-hidden="true">↗</span>
+      </button>
 
       <span className="abyss-index" aria-hidden="true">HV — 001 / THE ABYSS</span>
     </main>
