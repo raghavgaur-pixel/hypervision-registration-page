@@ -256,7 +256,18 @@ function App() {
     }
 
     setBusy(true)
+    let loginFullscreenAttempt = null
     try {
+      // Use the trusted Login click to request fullscreen before awaiting auth.
+      // Keep it active through the typewriter and video when sign-in succeeds.
+      if (
+        mode === 'login' &&
+        !document.fullscreenElement &&
+        document.documentElement.requestFullscreen
+      ) {
+        loginFullscreenAttempt = document.documentElement.requestFullscreen().catch(() => null)
+      }
+
       if (mode === 'signup') {
         const redirectUrl = new URL(window.location.href)
         redirectUrl.search = ''
@@ -310,6 +321,13 @@ function App() {
         setNotice({ type: 'success', text: 'If an account exists for that email, a reset link is on its way.' })
       }
     } catch (error) {
+      // If authentication failed, leave fullscreen so the login page is normal.
+      if (mode === 'login' && loginFullscreenAttempt) {
+        await loginFullscreenAttempt
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {})
+        }
+      }
       setNotice({ type: 'error', text: friendlyError(error.message) })
     } finally {
       setBusy(false)
