@@ -510,6 +510,7 @@ function App() {
   return (
     <AshenShelf
       initialAuthMode={recoveryFlow ? mode : (!showShelf && !showVerifiedPage ? mode : null)}
+      activeAuthMode={mode}
       onChoose={(nextMode) => changeMode(nextMode)}
       renderAuthPanel={renderAuthPanel}
     />
