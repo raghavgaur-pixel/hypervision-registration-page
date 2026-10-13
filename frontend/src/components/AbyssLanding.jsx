@@ -14,6 +14,7 @@ export default function AbyssLanding() {
   const [audioBlocked, setAudioBlocked] = useState(false)
   const [playing, setPlaying] = useState(false)
   const iframeRef = useRef(null)
+  const playingRef = useRef(false)
 
   useEffect(() => {
     if (visibleCharacters >= MESSAGE.length) {
@@ -50,6 +51,7 @@ export default function AbyssLanding() {
       }
       if (payload?.event === 'play' || payload?.event === 'playing') {
         hasStarted = true
+        playingRef.current = true
         setPlaying(true)
         setAudioBlocked(false)
       }
@@ -79,7 +81,7 @@ export default function AbyssLanding() {
     iframe.contentWindow.postMessage(JSON.stringify({ method: 'play' }), VIMEO_ORIGIN)
     setAudioBlocked(false)
     window.setTimeout(() => {
-      if (!playing) setAudioBlocked(true)
+      if (!playingRef.current) setAudioBlocked(true)
     }, 1800)
   }
 
