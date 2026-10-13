@@ -17,6 +17,7 @@ export default function AbyssLanding({ onSignOut, signingOut = false }) {
   const [revealDelayComplete, setRevealDelayComplete] = useState(false)
   const [playerPrimed, setPlayerPrimed] = useState(false)
   const [filmRevealed, setFilmRevealed] = useState(false)
+  const [filmFrameReady, setFilmFrameReady] = useState(false)
   const [audioBlocked, setAudioBlocked] = useState(false)
   const [audioPromptDismissed, setAudioPromptDismissed] = useState(false)
   const iframeRef = useRef(null)
@@ -73,6 +74,12 @@ export default function AbyssLanding({ onSignOut, signingOut = false }) {
 
       if (payload?.event === 'loaded' || payload?.event === 'playing' || payload?.event === 'timeupdate') {
         if (!filmRevealedRef.current) setPlayerPrimed(true)
+      }
+
+      // Keep a designed curtain over Vimeo's blank/white startup frame until
+      // playback has actually begun after the reel is revealed.
+      if ((payload?.event === 'playing' || payload?.event === 'timeupdate') && filmRevealedRef.current) {
+        setFilmFrameReady(true)
       }
 
       if (payload?.event === 'play' || payload?.event === 'playing') {
@@ -179,6 +186,19 @@ export default function AbyssLanding({ onSignOut, signingOut = false }) {
         loading="eager"
         referrerPolicy="strict-origin-when-cross-origin"
       />
+
+      <div
+        className={`abyss-video-curtain ${filmFrameReady ? 'is-clearing' : filmRevealed ? 'is-visible' : ''}`}
+        aria-hidden="true"
+      >
+        <div className="abyss-curtain-copy">
+          <p className="abyss-curtain-label">HYPERVISION / SIGNAL IN TRANSIT</p>
+          <p className="abyss-curtain-message">
+            Something else is coming<span className="abyss-curtain-caret" />
+          </p>
+          <div className="abyss-signal-line"><span /></div>
+        </div>
+      </div>
 
       {filmRevealed && audioBlocked && !audioPromptDismissed && (
         <button type="button" className="abyss-audio-gate" onClick={beginWithSound}>
