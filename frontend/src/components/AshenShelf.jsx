@@ -169,7 +169,7 @@ function wovenMaterial(THREE, map, roughness = 0.7) {
   return material
 }
 
-export default function AshenShelf({ onChoose, renderAuthPanel, initialAuthMode = null }) {
+export default function AshenShelf({ onChoose, renderAuthPanel, initialAuthMode = null, activeAuthMode = null }) {
   const hostRef = useRef(null)
   const chooseRef = useRef(onChoose)
   const selectedRef = useRef(null)
@@ -204,7 +204,7 @@ export default function AshenShelf({ onChoose, renderAuthPanel, initialAuthMode 
   }
   useEffect(() => {
     if (!initialAuthMode) return
-    const id = initialAuthMode === 'login' ? 'login' : initialAuthMode === 'signup' ? 'register' : null
+    const id = ['login', 'reset', 'update-password'].includes(initialAuthMode) ? 'login' : initialAuthMode === 'signup' ? 'register' : null
     if (id) { selectedRef.current = id; setSelected(id) }
     setAuthOpen(true)
   }, [initialAuthMode])
@@ -605,7 +605,7 @@ export default function AshenShelf({ onChoose, renderAuthPanel, initialAuthMode 
 
       <section className={'ashen-detail ' + ((selectedVolume || authOpen) ? 'is-open' : '') + (authOpen ? ' has-auth' : '')} aria-live="polite" aria-hidden={!selectedVolume && !authOpen} inert={!selectedVolume && !authOpen}>
         <div className="ashen-detail-top">
-          <span>{authOpen ? (selectedVolume?.meta || 'IDENTITY ARCHIVE') : (selectedVolume?.meta || 'IDENTITY ARCHIVE')}</span>
+          <span>{authOpen ? (activeAuthMode === 'reset' ? 'RECOVERY PROTOCOL' : activeAuthMode === 'update-password' ? 'SECURITY KEY / RENEWAL' : selectedVolume?.meta || 'IDENTITY ARCHIVE') : (selectedVolume?.meta || 'IDENTITY ARCHIVE')}</span>
           <button type="button" aria-label={authOpen ? 'Close form and return to book details' : 'Close book details'} onClick={closeDetails}><span>×</span></button>
         </div>
         {authOpen && renderAuthPanel ? (
