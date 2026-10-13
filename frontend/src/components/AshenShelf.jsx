@@ -107,6 +107,181 @@ function paintCover(THREE, volume) {
   return textureFromCanvas(THREE, canvas)
 }
 
+
+function paintPage(THREE, volume) {
+  const canvas = document.createElement('canvas')
+  canvas.width = 900
+  canvas.height = 1400
+  const ctx = canvas.getContext('2d')
+  const base = document.createElement('canvas')
+  base.width = canvas.width
+  base.height = canvas.height
+  const paper = base.getContext('2d')
+
+  const parchment = paper.createLinearGradient(40, 0, 870, 1400)
+  parchment.addColorStop(0, '#f5ecd8')
+  parchment.addColorStop(0.48, '#e9dcc2')
+  parchment.addColorStop(1, '#d6c19d')
+  paper.fillStyle = parchment
+  paper.fillRect(0, 0, 900, 1400)
+
+  const bloom = paper.createRadialGradient(470, 420, 30, 470, 420, 850)
+  bloom.addColorStop(0, 'rgba(255,252,238,.42)')
+  bloom.addColorStop(1, 'rgba(123,83,43,.08)')
+  paper.fillStyle = bloom
+  paper.fillRect(0, 0, 900, 1400)
+
+  let seed = volume.id === 'register' ? 319 : 811
+  const random = () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0
+    return seed / 4294967296
+  }
+  for (let i = 0; i < 1900; i += 1) {
+    const alpha = random() * 0.075
+    paper.fillStyle = random() > 0.5 ? 'rgba(111,76,43,' + alpha + ')' : 'rgba(255,255,247,' + alpha + ')'
+    paper.fillRect(random() * 900, random() * 1400, 1 + random() * 2, 1 + random() * 2)
+  }
+
+  paper.strokeStyle = 'rgba(130,94,53,.33)'
+  paper.lineWidth = 2
+  paper.strokeRect(43, 43, 814, 1314)
+  paper.strokeStyle = 'rgba(130,94,53,.18)'
+  paper.lineWidth = 1
+  paper.strokeRect(54, 54, 792, 1292)
+
+  paper.fillStyle = '#765937'
+  paper.font = '500 18px ui-monospace, monospace'
+  paper.textAlign = 'left'
+  paper.fillText('H Y P E R V I S I O N', 102, 103)
+  paper.textAlign = 'right'
+  paper.fillStyle = 'rgba(118,89,55,.78)'
+  paper.font = '400 15px ui-monospace, monospace'
+  paper.fillText(volume.id === 'register' ? 'FOLIO 01' : 'FOLIO 02', 798, 103)
+
+  paper.strokeStyle = 'rgba(153,112,65,.6)'
+  paper.lineWidth = 1.5
+  paper.beginPath()
+  paper.moveTo(102, 142)
+  paper.lineTo(798, 142)
+  paper.stroke()
+
+  paper.strokeStyle = 'rgba(153,112,65,.5)'
+  paper.lineWidth = 2
+  paper.beginPath()
+  paper.arc(750, 205, 28, 0, Math.PI * 2)
+  paper.stroke()
+  paper.beginPath()
+  paper.arc(750, 205, 19, 0, Math.PI * 2)
+  paper.stroke()
+  paper.fillStyle = '#9b774e'
+  paper.beginPath()
+  paper.arc(750, 205, 3, 0, Math.PI * 2)
+  paper.fill()
+
+  const glyphs = []
+  let sequence = 0
+  const ink = '#30251c'
+  const goldInk = '#89663c'
+  const addLine = (text, x, y, font, color) => {
+    ctx.font = font
+    let cursorX = x
+    for (const char of text) {
+      const width = ctx.measureText(char).width
+      glyphs.push({ char, x: cursorX, y, font, color, index: sequence, drift: Math.sin(sequence * 17.17) * 19, angle: Math.sin(sequence * 6.17) * 0.13 })
+      cursorX += width
+      sequence += 1
+    }
+  }
+  const addWrapped = (text, x, y, maxWidth, font, lineHeight, color) => {
+    ctx.font = font
+    const words = text.split(/\s+/)
+    let line = ''
+    let lineY = y
+    for (const word of words) {
+      const attempt = line ? line + ' ' + word : word
+      if (line && ctx.measureText(attempt).width > maxWidth) {
+        addLine(line, x, lineY, font, color)
+        line = word
+        lineY += lineHeight
+      } else {
+        line = attempt
+      }
+    }
+    if (line) addLine(line, x, lineY, font, color)
+    return lineY + lineHeight
+  }
+
+  addLine(
+    volume.id === 'register' ? 'VOLUME I  /  A NEW IDENTITY' : 'VOLUME II  /  RETURNING EXPLORER',
+    104, 231, '500 17px ui-monospace, monospace', goldInk,
+  )
+  addLine(volume.id === 'register' ? 'Every identity' : 'Some stories', 102, 352, '400 75px Georgia, serif', ink)
+  addLine(volume.id === 'register' ? 'begins somewhere.' : 'are waiting still.', 102, 438, 'italic 68px Georgia, serif', goldInk)
+
+  const firstParagraph = volume.id === 'register'
+    ? 'Every identity begins as an unwritten page. Here, the unfamiliar becomes possibility, and a name becomes the first mark in a world still waiting to be discovered.'
+    : 'Some stories are not finished; they are merely waiting to be continued. Every return is a small act of remembrance, every familiar threshold an invitation to begin once more.'
+  const secondParagraph = volume.id === 'register'
+    ? 'Step beyond the ordinary. The archive remembers only what you choose to write.'
+    : 'Your place in the archive remains. Turn the page, and continue.'
+  const quote = volume.id === 'register'
+    ? 'Begin where the page is blank.'
+    : 'Nothing true is ever entirely lost.'
+
+  let nextY = addWrapped(firstParagraph, 104, 594, 692, '400 28px Georgia, serif', 47, ink)
+  nextY = Math.max(nextY + 48, 824)
+  nextY = addWrapped(secondParagraph, 104, nextY, 692, '400 28px Georgia, serif', 47, ink)
+  addLine('“' + quote + '”', 104, 1080, 'italic 30px Georgia, serif', goldInk)
+
+  paper.strokeStyle = 'rgba(153,112,65,.58)'
+  paper.lineWidth = 1.5
+  paper.beginPath()
+  paper.moveTo(102, 1214)
+  paper.lineTo(798, 1214)
+  paper.stroke()
+  paper.textAlign = 'left'
+  paper.font = '400 14px ui-monospace, monospace'
+  paper.fillStyle = 'rgba(85,64,43,.76)'
+  paper.fillText('THE IDENTITY ARCHIVE', 104, 1253)
+  paper.textAlign = 'right'
+  paper.fillText(volume.id === 'register' ? 'VOL. I  /  BEGIN' : 'VOL. II  /  RETURN', 798, 1253)
+  paper.textAlign = 'left'
+
+  const texture = textureFromCanvas(THREE, canvas)
+  const interval = 19
+  const fallDuration = 440
+  const duration = Math.max(0, sequence - 1) * interval + fallDuration + 80
+
+  const drawAt = (elapsed, complete = false) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.drawImage(base, 0, 0)
+    for (const glyph of glyphs) {
+      const raw = complete ? 1 : (elapsed - glyph.index * interval) / fallDuration
+      if (raw < 0) continue
+      const progress = Math.min(raw, 1)
+      const eased = 1 - Math.pow(1 - progress, 2.45)
+      const fromY = 100 + (glyph.index % 8) * 17
+      const x = glyph.x + glyph.drift * (1 - eased)
+      const y = fromY + (glyph.y - fromY) * eased
+      const angle = glyph.angle * (1 - eased)
+      ctx.save()
+      ctx.globalAlpha = Math.min(1, progress * 1.8)
+      ctx.translate(x, y)
+      ctx.rotate(angle)
+      ctx.font = glyph.font
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'alphabetic'
+      ctx.fillStyle = glyph.color
+      ctx.fillText(glyph.char, 0, 0)
+      ctx.restore()
+    }
+    texture.needsUpdate = true
+  }
+
+  drawAt(0, true)
+  return { texture, drawAt, duration }
+}
+
 function paintWood(THREE) {
   const canvas = document.createElement('canvas')
   canvas.width = 1024
@@ -354,20 +529,12 @@ export default function AshenShelf({ onChoose, renderAuthPanel, initialAuthMode 
       const W = 0.92
       const H = 1.47
       const D = 0.19
-      const pageCanvas = document.createElement('canvas')
-      pageCanvas.width = pageCanvas.height = 256
-      const pctx = pageCanvas.getContext('2d')
-      pctx.fillStyle = '#d3c8b3'
-      pctx.fillRect(0, 0, 256, 256)
-      for (let y = 4; y < 256; y += 4) {
-        pctx.strokeStyle = 'rgba(74,54,35,.16)'
-        pctx.beginPath(); pctx.moveTo(0, y); pctx.lineTo(256, y); pctx.stroke()
-      }
-      const pagesTex = rememberTexture(textureFromCanvas(THREE, pageCanvas))
-      const pageMat = rememberMaterial(new THREE.MeshStandardMaterial({ map: pagesTex, color: 0xd8cdb8, roughness: 0.92 }))
       const pageEdgeMat = rememberMaterial(new THREE.MeshStandardMaterial({ color: 0xc8bba5, roughness: 0.92 }))
 
       books = VOLUMES.map((volume, index) => {
+        const page = paintPage(THREE, volume)
+        rememberTexture(page.texture)
+        const pageMat = rememberMaterial(new THREE.MeshStandardMaterial({ map: page.texture, color: 0xffffff, roughness: 0.92 }))
         const root = new THREE.Group()
         root.userData.bookId = volume.id
         root.position.set(volume.baseX, -0.68, 0.08)
@@ -375,7 +542,7 @@ export default function AshenShelf({ onChoose, renderAuthPanel, initialAuthMode 
         root.rotation.z = index === 0 ? -0.012 : 0.012
         roomGroup.add(root)
         const body = new THREE.Mesh(rememberGeometry(new THREE.BoxGeometry(W - 0.06, H - 0.05, D - 0.04)), [
-          pageEdgeMat, pageEdgeMat, pageMat, pageMat, pageEdgeMat, pageEdgeMat,
+          pageEdgeMat, pageEdgeMat, pageEdgeMat, pageEdgeMat, pageMat, pageEdgeMat,
         ])
         body.position.set(0.018, H / 2, 0)
         body.castShadow = true
@@ -422,7 +589,7 @@ export default function AshenShelf({ onChoose, renderAuthPanel, initialAuthMode 
         seal.position.set(W / 2 - 0.19, H - 0.21, D / 2 + 0.043)
         root.add(seal)
         root.traverse((object) => { if (object.isMesh) object.userData.bookId = volume.id })
-        return { ...volume, root, hinge, baseX: volume.baseX, baseY: -0.68, baseZ: 0.08, baseRot: index === 0 ? -0.045 : 0.045, dragYaw: 0, dragPitch: 0, flipped: false }
+        return { ...volume, root, hinge, page, pageAnimating: false, pageRevealStart: 0, baseX: volume.baseX, baseY: -0.68, baseZ: 0.08, baseRot: index === 0 ? -0.045 : 0.045, dragYaw: 0, dragPitch: 0, flipped: false }
       })
 
       const resize = () => {
@@ -481,6 +648,13 @@ export default function AshenShelf({ onChoose, renderAuthPanel, initialAuthMode 
           try { renderer.domElement.releasePointerCapture?.(event.pointerId) } catch {}
           if (currentDrag.moved < 9 && selectedRef.current === currentDrag.book.id) {
             currentDrag.book.flipped = !currentDrag.book.flipped
+            if (currentDrag.book.flipped) {
+              currentDrag.book.pageAnimating = !reducedMotion
+              currentDrag.book.pageRevealStart = performance.now()
+              currentDrag.book.page.drawAt(0, reducedMotion)
+            } else {
+              currentDrag.book.pageAnimating = false
+            }
           }
           return
         }
@@ -549,6 +723,11 @@ export default function AshenShelf({ onChoose, renderAuthPanel, initialAuthMode 
           book.root.rotation.x = damp(book.root.rotation.x, book.dragPitch + (isHovered && !reducedMotion ? pointerY * -0.018 : 0), 5.5, delta)
           const openAngle = isChosen && book.flipped ? -Math.PI * 0.76 : 0
           book.hinge.rotation.y = damp(book.hinge.rotation.y, openAngle, 5.5, delta)
+          if (book.flipped && book.pageAnimating) {
+            const elapsed = now - book.pageRevealStart
+            book.page.drawAt(elapsed)
+            if (elapsed >= book.page.duration) book.pageAnimating = false
+          }
           book.root.scale.setScalar(damp(book.root.scale.x, targetScale, 5.5, delta))
         }
         if (!reducedMotion) {
