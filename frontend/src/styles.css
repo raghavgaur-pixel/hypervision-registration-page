@@ -1285,3 +1285,42 @@ input:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+.api-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: -8px 0 20px;
+  color: #79788d;
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.07em;
+}
+
+.api-status > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d5b174;
+  box-shadow: 0 0 8px rgba(213, 177, 116, 0.4);
+}
+
+.api-status.verified {
+  color: #83dcbc;
+}
+
+.api-status.verified > span {
+  background: #70e6ba;
+  box-shadow: 0 0 9px rgba(112, 230, 186, 0.55);
+}
+
+.api-status.unavailable {
+  color: #d6a6a9;
+}
+
+.api-status.unavailable > span {
+  background: #d98c9b;
+  box-shadow: 0 0 9px rgba(217, 140, 155, 0.4);
+}
