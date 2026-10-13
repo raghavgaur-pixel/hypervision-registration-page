@@ -51,7 +51,7 @@ export default function AbyssLanding({ onSignOut, signingOut = false }) {
     if (!iframe) return undefined
 
     const addPlayerListeners = () => {
-      for (const eventName of ['play', 'playing', 'loaded', 'volumechange', 'error']) {
+      for (const eventName of ['play', 'playing', 'loaded', 'timeupdate', 'volumechange', 'error']) {
         iframe.contentWindow?.postMessage(
           JSON.stringify({ method: 'addEventListener', value: eventName }),
           VIMEO_ORIGIN,
@@ -71,7 +71,7 @@ export default function AbyssLanding({ onSignOut, signingOut = false }) {
         }
       }
 
-      if (payload?.event === 'loaded' || payload?.event === 'playing') {
+      if (payload?.event === 'loaded' || payload?.event === 'playing' || payload?.event === 'timeupdate') {
         if (!filmRevealedRef.current) setPlayerPrimed(true)
       }
 
