@@ -74,7 +74,7 @@
   animation: abyss-caret-blink 850ms steps(2, start) infinite;
 }
 
-.abyss-film {
+.abyss-film {\n  display: block;\n  border: 0;
   position: absolute;
   z-index: 1;
   inset: 0;
