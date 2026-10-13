@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react'
-import * as THREE from 'three'
 
 /**
- * A lightweight, decorative 3D portal. It is intentionally non-interactive:
- * the canvas is decorative and never sits above forms or controls.
+ * Decorative 3D portal. Mobile devices and browsers without WebGL use a CSS
+ * fallback, so the initial/mobile bundle does not download Three.js.
  */
 export default function PortalScene({ variant = 'portal' }) {
   const hostRef = useRef(null)
@@ -12,21 +11,57 @@ export default function PortalScene({ variant = 'portal' }) {
     const host = hostRef.current
     if (!host) return undefined
 
+    const small = window.matchMedia('(max-width: 700px)').matches
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const supportsWebGL = Boolean(window.WebGLRenderingContext || window.WebGL2RenderingContext)
+
+    if (small || !supportsWebGL) {
+      host.dataset.fallback = 'true'
+      return undefined
+    }
+
     let renderer
+    let scene
     let frame = 0
     let observer
     let onPointerMove
     let disposed = false
+    let pointerX = 0
+    let pointerY = 0
+    let time = 0
 
-    try {
-      const scene = new THREE.Scene()
+    const cleanup = () => {
+      disposed = true
+      if (frame) window.cancelAnimationFrame(frame)
+      observer?.disconnect()
+      if (onPointerMove) window.removeEventListener('pointermove', onPointerMove)
+      if (scene) {
+        scene.traverse((object) => {
+          object.geometry?.dispose()
+          if (object.material) {
+            const materials = Array.isArray(object.material) ? object.material : [object.material]
+            materials.forEach((material) => material.dispose())
+          }
+        })
+      }
+      renderer?.dispose()
+      if (renderer?.domElement.parentNode === host) host.removeChild(renderer.domElement)
+    }
+
+    // Import only on capable desktop browsers. The CSS fallback remains crisp
+    // and lightweight for smaller screens and when a GPU/context is unavailable.
+    import('three').then((THREE) => {
+      if (disposed) return
+
+      scene = new THREE.Scene()
       const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100)
       camera.position.set(0, 0, 9.5)
-
-      const small = window.matchMedia('(max-width: 700px)').matches
-      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: !small, powerPreference: 'low-power' })
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, small ? 1.25 : 1.6))
+      renderer = new THREE.WebGLRenderer({
+        alpha: true,
+        antialias: true,
+        powerPreference: 'low-power',
+      })
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5))
       renderer.setClearColor(0x000000, 0)
       renderer.outputColorSpace = THREE.SRGBColorSpace
       host.appendChild(renderer.domElement)
@@ -34,8 +69,8 @@ export default function PortalScene({ variant = 'portal' }) {
       const portal = new THREE.Group()
       scene.add(portal)
       const celebration = variant === 'celebration'
-      portal.scale.setScalar(small ? (celebration ? 0.76 : 0.7) : (celebration ? 1.04 : 0.94))
-      portal.position.set(celebration ? 0 : (small ? 0.15 : 0.75), celebration ? 0.02 : -0.05, 0)
+      portal.scale.setScalar(celebration ? 1.04 : 0.94)
+      portal.position.set(celebration ? 0 : 0.72, celebration ? 0.02 : -0.05, 0)
 
       const coreMaterial = new THREE.MeshPhysicalMaterial({
         color: 0x17162c,
@@ -46,24 +81,26 @@ export default function PortalScene({ variant = 'portal' }) {
         emissive: 0x3422a0,
         emissiveIntensity: 0.55,
       })
-      const core = new THREE.Mesh(new THREE.SphereGeometry(1.12, 64, 48), coreMaterial)
+      const core = new THREE.Mesh(new THREE.SphereGeometry(1.12, 48, 36), coreMaterial)
       portal.add(core)
 
       const shell = new THREE.Mesh(
-        new THREE.SphereGeometry(1.19, 28, 24),
+        new THREE.SphereGeometry(1.19, 24, 20),
         new THREE.MeshBasicMaterial({ color: 0x9b88ff, wireframe: true, transparent: true, opacity: 0.14 }),
       )
       portal.add(shell)
 
-      const haloMaterial = new THREE.MeshBasicMaterial({
-        color: 0x8e7cff,
-        transparent: true,
-        opacity: 0.1,
-        side: THREE.BackSide,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      })
-      const halo = new THREE.Mesh(new THREE.SphereGeometry(1.38, 40, 32), haloMaterial)
+      const halo = new THREE.Mesh(
+        new THREE.SphereGeometry(1.38, 32, 24),
+        new THREE.MeshBasicMaterial({
+          color: 0x8e7cff,
+          transparent: true,
+          opacity: 0.1,
+          side: THREE.BackSide,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        }),
+      )
       portal.add(halo)
 
       const rings = []
@@ -73,29 +110,31 @@ export default function PortalScene({ variant = 'portal' }) {
         { radius: 2.08, tube: 0.006, color: 0xf4d9a0, rotation: [0.46, 1.18, -0.25], speed: 0.055 },
       ]
       ringSpecs.forEach((spec, index) => {
-        const material = new THREE.MeshBasicMaterial({
-          color: spec.color,
-          transparent: true,
-          opacity: index === 0 ? 0.75 : 0.52,
-          blending: THREE.AdditiveBlending,
-          depthWrite: false,
-        })
-        const mesh = new THREE.Mesh(new THREE.TorusGeometry(spec.radius, spec.tube, 8, 180), material)
-        mesh.rotation.set(spec.rotation[0], spec.rotation[1], spec.rotation[2])
-        mesh.userData.speed = spec.speed
-        portal.add(mesh)
-        rings.push(mesh)
+        const ring = new THREE.Mesh(
+          new THREE.TorusGeometry(spec.radius, spec.tube, 8, 160),
+          new THREE.MeshBasicMaterial({
+            color: spec.color,
+            transparent: true,
+            opacity: index === 0 ? 0.75 : 0.52,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+          }),
+        )
+        ring.rotation.set(spec.rotation[0], spec.rotation[1], spec.rotation[2])
+        ring.userData.speed = spec.speed
+        portal.add(ring)
+        rings.push(ring)
       })
 
       const innerRing = new THREE.Mesh(
-        new THREE.TorusGeometry(0.74, 0.012, 8, 128),
+        new THREE.TorusGeometry(0.74, 0.012, 8, 112),
         new THREE.MeshBasicMaterial({ color: 0x72e7e2, transparent: true, opacity: 0.64, blending: THREE.AdditiveBlending }),
       )
       innerRing.rotation.set(1.28, 0.45, 0.1)
       portal.add(innerRing)
 
       const beads = new THREE.Group()
-      const beadGeometry = new THREE.SphereGeometry(0.035, 12, 10)
+      const beadGeometry = new THREE.SphereGeometry(0.035, 10, 8)
       const beadMaterials = [
         new THREE.MeshBasicMaterial({ color: 0xc3b8ff }),
         new THREE.MeshBasicMaterial({ color: 0x82f0dc }),
@@ -109,27 +148,26 @@ export default function PortalScene({ variant = 'portal' }) {
       }
       portal.add(beads)
 
-      const particleCount = small ? 150 : 360
+      const particleCount = 260
       const positions = new Float32Array(particleCount * 3)
-      const scales = new Float32Array(particleCount)
       for (let index = 0; index < particleCount; index += 1) {
         positions[index * 3] = (Math.random() - 0.5) * 15
         positions[index * 3 + 1] = (Math.random() - 0.5) * 10
         positions[index * 3 + 2] = (Math.random() - 0.5) * 6 - 1.5
-        scales[index] = Math.random()
       }
       const starGeometry = new THREE.BufferGeometry()
       starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-      starGeometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 1))
-      const starMaterial = new THREE.PointsMaterial({
-        color: celebration ? 0xd0c5ff : 0xaaa9ec,
-        size: small ? 0.025 : 0.031,
-        transparent: true,
-        opacity: 0.62,
-        sizeAttenuation: true,
-        depthWrite: false,
-      })
-      const stars = new THREE.Points(starGeometry, starMaterial)
+      const stars = new THREE.Points(
+        starGeometry,
+        new THREE.PointsMaterial({
+          color: celebration ? 0xd0c5ff : 0xaaa9ec,
+          size: 0.028,
+          transparent: true,
+          opacity: 0.62,
+          sizeAttenuation: true,
+          depthWrite: false,
+        }),
+      )
       scene.add(stars)
 
       scene.add(new THREE.AmbientLight(0xa4a0ff, 1.4))
@@ -148,15 +186,12 @@ export default function PortalScene({ variant = 'portal' }) {
         camera.aspect = width / height
         camera.position.z = width < 500 ? 10.6 : 9.5
         camera.updateProjectionMatrix()
-        portal.position.x = celebration ? 0 : width < 700 ? 0.02 : width < 950 ? 0.35 : 0.72
+        portal.position.x = celebration ? 0 : width < 950 ? 0.25 : 0.72
         renderer.render(scene, camera)
       }
 
-      let pointerX = 0
-      let pointerY = 0
-      let time = 0
       onPointerMove = (event) => {
-        if (reducedMotion || small) return
+        if (reducedMotion) return
         pointerX = (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * 0.13
         pointerY = (event.clientY / Math.max(window.innerHeight, 1) - 0.5) * 0.1
       }
@@ -185,35 +220,12 @@ export default function PortalScene({ variant = 'portal' }) {
         }
         renderer.render(scene, camera)
       }
-      if (!reducedMotion) frame = window.requestAnimationFrame(animate)
+      frame = window.requestAnimationFrame(animate)
+    }).catch(() => {
+      if (!disposed) host.dataset.fallback = 'true'
+    })
 
-      return () => {
-        disposed = true
-        if (frame) window.cancelAnimationFrame(frame)
-        if (observer) observer.disconnect()
-        if (onPointerMove) window.removeEventListener('pointermove', onPointerMove)
-        scene.traverse((object) => {
-          if (object.geometry) object.geometry.dispose()
-          if (object.material) {
-            const materials = Array.isArray(object.material) ? object.material : [object.material]
-            materials.forEach((material) => material.dispose())
-          }
-        })
-        renderer?.dispose()
-        if (renderer?.domElement.parentNode === host) host.removeChild(renderer.domElement)
-      }
-    } catch {
-      renderer?.dispose()
-      host.dataset.fallback = 'true'
-    }
-
-    return () => {
-      disposed = true
-      if (frame) window.cancelAnimationFrame(frame)
-      if (observer) observer.disconnect()
-      if (onPointerMove) window.removeEventListener('pointermove', onPointerMove)
-      renderer?.dispose()
-    }
+    return cleanup
   }, [variant])
 
   return <div className={'portal-scene portal-scene-' + variant} ref={hostRef} aria-hidden="true" />
