@@ -243,10 +243,7 @@ function App() {
 
     // Supabase also applies a short per-account cooldown to recovery requests.
     if (value.includes('for security purposes') && (value.includes('request this after') || value.includes('seconds'))) {
-      const seconds = value.match(/(\\d+)\\s*seconds?/)?.[1]
-      return seconds
-        ? `For account security, wait about ${seconds} second${seconds === '1' ? '' : 's'} before requesting another email.`
-        : 'For account security, this request is on a short cooldown. Wait a moment before requesting another email.'
+      return 'For account security, this request is on a short cooldown. Wait for the interval stated by Supabase before requesting another email.'
     }
 
     if (value.includes('rate limit') || value.includes('too many requests') || status === 429) {
