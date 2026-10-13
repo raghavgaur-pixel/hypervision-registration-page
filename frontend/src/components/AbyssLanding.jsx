@@ -14,15 +14,15 @@ const VIMEO_PLAYER_URL = 'https://player.vimeo.com/video/790050266?autoplay=1&mu
 export default function AbyssLanding({ onSignOut, signingOut = false }) {
   const [visibleCharacters, setVisibleCharacters] = useState(0)
   const [typingDone, setTypingDone] = useState(false)
+  const [revealDelayComplete, setRevealDelayComplete] = useState(false)
+  const [playerPrimed, setPlayerPrimed] = useState(false)
   const [filmRevealed, setFilmRevealed] = useState(false)
   const [audioBlocked, setAudioBlocked] = useState(false)
-  const [playing, setPlaying] = useState(false)
   const [audioPromptDismissed, setAudioPromptDismissed] = useState(false)
   const iframeRef = useRef(null)
   const filmRevealedRef = useRef(false)
   const playingRef = useRef(false)
   const soundConfirmedRef = useRef(false)
-  const audioPromptDismissedRef = useRef(false)
 
   const postToPlayer = (method, value) => {
     const player = iframeRef.current?.contentWindow
@@ -71,10 +71,13 @@ export default function AbyssLanding({ onSignOut, signingOut = false }) {
         }
       }
 
+      if (payload?.event === 'loaded' || payload?.event === 'playing') {
+        if (!filmRevealedRef.current) setPlayerPrimed(true)
+      }
+
       if (payload?.event === 'play' || payload?.event === 'playing') {
         if (filmRevealedRef.current) {
           playingRef.current = true
-          setPlaying(true)
         }
       }
 
@@ -95,24 +98,33 @@ export default function AbyssLanding({ onSignOut, signingOut = false }) {
     window.addEventListener('message', onMessage)
     iframe.addEventListener('load', addPlayerListeners)
     addPlayerListeners()
+    // If muted autoplay is blocked, don't leave the opening text stuck forever.
+    const primeFallback = window.setTimeout(() => setPlayerPrimed(true), 9000)
 
     return () => {
       window.removeEventListener('message', onMessage)
       iframe.removeEventListener('load', addPlayerListeners)
+      window.clearTimeout(primeFallback)
     }
   }, [])
 
   useEffect(() => {
     if (!typingDone) return undefined
 
-    // Pause and rewind while the completed line is still onscreen. The opening
-    // pause gives the already-loaded player a moment to settle at the first frame.
-    postToPlayer('pause')
-    postToPlayer('setCurrentTime', 0)
-
-    const timer = window.setTimeout(() => setFilmRevealed(true), REVEAL_PAUSE_MS)
+    const timer = window.setTimeout(() => setRevealDelayComplete(true), REVEAL_PAUSE_MS)
     return () => window.clearTimeout(timer)
   }, [typingDone])
+
+  useEffect(() => {
+    if (!typingDone || !revealDelayComplete || !playerPrimed) return undefined
+
+    // Keep the final line onscreen until the hidden player has loaded. Rewind
+    // behind the text, then reveal only after the player is settled at frame one.
+    postToPlayer('pause')
+    postToPlayer('setCurrentTime', 0)
+    const timer = window.setTimeout(() => setFilmRevealed(true), 120)
+    return () => window.clearTimeout(timer)
+  }, [typingDone, revealDelayComplete, playerPrimed])
 
   useEffect(() => {
     if (!filmRevealed) return undefined
@@ -134,7 +146,6 @@ export default function AbyssLanding({ onSignOut, signingOut = false }) {
   }, [filmRevealed])
 
   const beginWithSound = () => {
-    audioPromptDismissedRef.current = true
     setAudioPromptDismissed(true)
     postToPlayer('setVolume', 1)
     postToPlayer('play')
