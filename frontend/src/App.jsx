@@ -21,6 +21,23 @@ import AshenShelf from './components/AshenShelf.jsx'
 import AbyssLanding from './components/AbyssLanding.jsx'
 import { supabase, supabaseReady } from './lib/supabase'
 
+const DEFAULT_PUBLIC_SITE_URL = 'https://hypervision-registration-page.vercel.app'
+const PUBLIC_SITE_URL = (() => {
+  const configuredUrl = import.meta.env.VITE_SITE_URL
+  if (configuredUrl) {
+    try {
+      const url = new URL(configuredUrl)
+      // Never let local development leak localhost into a production email link.
+      if (url.protocol === 'https:' && !['localhost', '127.0.0.1'].includes(url.hostname)) {
+        return url.origin
+      }
+    } catch {
+      // Fall back to the canonical deployed URL for invalid configuration.
+    }
+  }
+  return DEFAULT_PUBLIC_SITE_URL
+})()
+
 function PasswordField({ value, onChange, visible, setVisible, autoComplete = 'current-password', placeholder = 'At least 8 characters' }) {
   return (
     <div className="input-wrap password-wrap">
@@ -269,10 +286,9 @@ function App() {
       }
 
       if (mode === 'signup') {
-        const redirectUrl = new URL(window.location.href)
-        redirectUrl.search = ''
-        redirectUrl.hash = ''
-        redirectUrl.searchParams.set('verified', '1')
+        // Confirmation links must target the public app, never whichever host
+        // happens to be open (for example localhost during local development).
+        const redirectUrl = new URL('/?verified=1', PUBLIC_SITE_URL)
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
@@ -315,7 +331,7 @@ function App() {
         setNotice({ type: 'success', text: 'Password updated. Sign in with your new key.' })
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: window.location.origin,
+          redirectTo: new URL('/', PUBLIC_SITE_URL).toString(),
         })
         if (error) throw error
         setNotice({ type: 'success', text: 'If an account exists for that email, a reset link is on its way.' })
