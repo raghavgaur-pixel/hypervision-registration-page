@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import * as THREE from 'three'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowDownRight,
   ArrowLeft,
@@ -18,143 +17,6 @@ import {
   Zap,
 } from 'lucide-react'
 import { supabase, supabaseReady } from './lib/supabase'
-
-function Atmosphere() {
-  const mountRef = useRef(null)
-
-  useEffect(() => {
-    const mount = mountRef.current
-    if (!mount) return undefined
-
-    const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100)
-    camera.position.set(0, 0, 10)
-
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    renderer.setClearColor(0x000000, 0)
-    mount.appendChild(renderer.domElement)
-
-    const core = new THREE.Group()
-    scene.add(core)
-
-    const knotMaterial = new THREE.MeshStandardMaterial({
-      color: 0x9c8cff,
-      emissive: 0x5540ff,
-      emissiveIntensity: 1.35,
-      metalness: 0.8,
-      roughness: 0.24,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.82,
-    })
-    const knot = new THREE.Mesh(new THREE.TorusKnotGeometry(1.5, 0.34, 220, 18, 2, 5), knotMaterial)
-    core.add(knot)
-
-    const inner = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(0.94, 2),
-      new THREE.MeshBasicMaterial({ color: 0x6ce9ff, wireframe: true, transparent: true, opacity: 0.16 }),
-    )
-    core.add(inner)
-
-    const haloMaterial = new THREE.MeshBasicMaterial({
-      color: 0x7d70ff,
-      transparent: true,
-      opacity: 0.24,
-      side: THREE.DoubleSide,
-      wireframe: true,
-    })
-    const halo = new THREE.Mesh(new THREE.TorusGeometry(2.35, 0.006, 3, 180), haloMaterial)
-    halo.rotation.set(0.8, 0.25, -0.5)
-    core.add(halo)
-
-    const haloTwo = new THREE.Mesh(new THREE.TorusGeometry(2.8, 0.004, 3, 180), haloMaterial.clone())
-    haloTwo.rotation.set(1.3, -0.55, 0.7)
-    haloTwo.scale.set(0.8, 1.2, 1)
-    core.add(haloTwo)
-
-    const starCount = 1500
-    const starPositions = new Float32Array(starCount * 3)
-    const starColors = new Float32Array(starCount * 3)
-    for (let i = 0; i < starCount; i += 1) {
-      starPositions[i * 3] = (Math.random() - 0.5) * 24
-      starPositions[i * 3 + 1] = (Math.random() - 0.5) * 16
-      starPositions[i * 3 + 2] = (Math.random() - 0.5) * 14 - 2
-      const cyan = Math.random() > 0.72
-      starColors[i * 3] = cyan ? 0.36 : 0.62
-      starColors[i * 3 + 1] = cyan ? 0.91 : 0.54
-      starColors[i * 3 + 2] = 1
-    }
-    const starGeometry = new THREE.BufferGeometry()
-    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3))
-    starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3))
-    const stars = new THREE.Points(
-      starGeometry,
-      new THREE.PointsMaterial({ size: 0.022, vertexColors: true, transparent: true, opacity: 0.82, sizeAttenuation: true }),
-    )
-    scene.add(stars)
-
-    scene.add(new THREE.AmbientLight(0x8b91ff, 1.5))
-    const keyLight = new THREE.PointLight(0x8b7aff, 24, 18)
-    keyLight.position.set(3, 2, 5)
-    scene.add(keyLight)
-    const rimLight = new THREE.PointLight(0x49e8ff, 16, 15)
-    rimLight.position.set(-4, -2, 3)
-    scene.add(rimLight)
-
-    const resize = () => {
-      const width = mount.clientWidth || window.innerWidth
-      const height = mount.clientHeight || window.innerHeight
-      camera.aspect = width / height
-      camera.position.x = width < 700 ? 0.45 : 1.35
-      camera.position.z = width < 700 ? 11 : 10
-      camera.updateProjectionMatrix()
-      renderer.setSize(width, height)
-    }
-
-    resize()
-    window.addEventListener('resize', resize)
-    let frame = 0
-    let pointerX = 0
-    let pointerY = 0
-    const onPointerMove = (event) => {
-      pointerX = (event.clientX / window.innerWidth - 0.5) * 0.45
-      pointerY = (event.clientY / window.innerHeight - 0.5) * 0.35
-    }
-    window.addEventListener('pointermove', onPointerMove)
-
-    const animate = () => {
-      frame = requestAnimationFrame(animate)
-      const time = performance.now() * 0.00018
-      knot.rotation.x = time * 1.1 + pointerY
-      knot.rotation.y = time * 1.8 + pointerX
-      inner.rotation.x = -time * 1.2
-      inner.rotation.y = time * 0.7
-      halo.rotation.z = time * 0.8
-      haloTwo.rotation.x = time * 0.5
-      core.rotation.y += (pointerX - core.rotation.y) * 0.012
-      core.rotation.x += (pointerY - core.rotation.x) * 0.012
-      stars.rotation.y = time * 0.07
-      renderer.render(scene, camera)
-    }
-    animate()
-
-    return () => {
-      cancelAnimationFrame(frame)
-      window.removeEventListener('resize', resize)
-      window.removeEventListener('pointermove', onPointerMove)
-      scene.traverse((object) => {
-        object.geometry?.dispose()
-        if (Array.isArray(object.material)) object.material.forEach((material) => material.dispose())
-        else object.material?.dispose()
-      })
-      renderer.dispose()
-      renderer.domElement.remove()
-    }
-  }, [])
-
-  return <div className="atmosphere" ref={mountRef} aria-hidden="true" />
-}
 
 function PasswordField({ value, onChange, visible, setVisible, autoComplete = 'current-password' }) {
   return (
@@ -189,25 +51,10 @@ function App() {
   const [notice, setNotice] = useState(null)
   const [user, setUser] = useState(null)
   const [booting, setBooting] = useState(true)
-  const [apiStatus, setApiStatus] = useState('idle')
+  const [profileName, setProfileName] = useState('')
+  const [profileLoading, setProfileLoading] = useState(false)
+  const [profileSaving, setProfileSaving] = useState(false)
   const [recoveryFlow, setRecoveryFlow] = useState(false)
-
-  const verifyBackend = async (session) => {
-    if (!session?.access_token) {
-      setApiStatus('idle')
-      return
-    }
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-      const response = await fetch(`${apiUrl}/api/me`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      })
-      if (!response.ok) throw new Error('API verification failed')
-      setApiStatus('verified')
-    } catch {
-      setApiStatus('unavailable')
-    }
-  }
 
   useEffect(() => {
     if (!supabaseReady) {
@@ -218,7 +65,6 @@ function App() {
     supabase.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null)
       setBooting(false)
-      verifyBackend(data.session)
     })
 
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
@@ -227,11 +73,59 @@ function App() {
         setMode('update-password')
       }
       setUser(session?.user ?? null)
-      verifyBackend(session)
     })
 
     return () => data.subscription.unsubscribe()
   }, [])
+
+  useEffect(() => {
+    if (!user || !supabaseReady) {
+      setProfileName('')
+      return
+    }
+    let active = true
+    setProfileLoading(true)
+    supabase.from('profiles').select('display_name').eq('id', user.id).maybeSingle()
+      .then(({ data, error }) => {
+        if (!active) return
+        if (error) {
+          setNotice({ type: 'error', text: 'Your account is active, but the profile could not be loaded. Check the profiles table and its row-level security policies in Supabase.' })
+          setProfileName(user.user_metadata?.display_name || '')
+        } else {
+          setProfileName(data?.display_name || user.user_metadata?.display_name || '')
+        }
+      })
+      .finally(() => { if (active) setProfileLoading(false) })
+    return () => { active = false }
+  }, [user])
+
+  const saveProfile = async (event) => {
+    event.preventDefault()
+    if (!user || !supabaseReady) return
+    setProfileSaving(true)
+    setNotice(null)
+    const cleanName = profileName.trim()
+    if (cleanName.length < 2 || cleanName.length > 80) {
+      setNotice({ type: 'error', text: 'Your display name must be between 2 and 80 characters.' })
+      setProfileSaving(false)
+      return
+    }
+    try {
+      const { error } = await supabase.from('profiles').upsert({
+        id: user.id,
+        display_name: cleanName,
+        updated_at: new Date().toISOString(),
+      })
+      if (error) throw error
+      const { error: metadataError } = await supabase.auth.updateUser({ data: { display_name: cleanName } })
+      if (metadataError) throw metadataError
+      setNotice({ type: 'success', text: 'Your profile has been saved.' })
+    } catch (error) {
+      setNotice({ type: 'error', text: error.message || 'Could not save your profile.' })
+    } finally {
+      setProfileSaving(false)
+    }
+  }
 
   const strength = useMemo(() => {
     if (!password) return 0
@@ -351,7 +245,7 @@ function App() {
     return (
       <main className="loading-screen">
         <div className="loading-mark"><Orbit size={28} /></div>
-        <span>Aligning the stars</span>
+        <span>Opening Hypervision</span>
       </main>
     )
   }
@@ -359,7 +253,6 @@ function App() {
   if (user && !recoveryFlow) {
     return (
       <main className="portal-shell">
-        <Atmosphere />
         <div className="portal-topbar">
           <a className="wordmark" href="/" aria-label="Hypervision home"><span className="brand-symbol"><Orbit size={22} /></span>HYPERVISION<span className="brand-period">.</span></a>
           <span className="system-status"><span /> SECURE SESSION ACTIVE</span>
@@ -368,10 +261,16 @@ function App() {
           <div className="welcome-icon"><Fingerprint size={32} /></div>
           <span className="eyebrow">IDENTITY VERIFIED · 001</span>
           <h1>You’re <span>in.</span></h1>
-          <p>Your next dimension is waiting, {user.user_metadata?.display_name || user.email?.split('@')[0] || 'traveller'}.</p>
+          <p>Your account is connected. Your profile is stored securely in Supabase.</p>
           <div className="identity-row"><div className="identity-avatar">{(user.email || 'H').charAt(0).toUpperCase()}</div><div><span>AUTHENTICATED AS</span><strong>{user.email}</strong></div><ShieldCheck size={20} className="identity-check" /></div>
-          <div className={`api-status ${apiStatus}`}><span />{apiStatus === 'verified' ? 'PYTHON API · IDENTITY VERIFIED' : apiStatus === 'unavailable' ? 'PYTHON API · OFFLINE, AUTH STILL ACTIVE' : 'CHECKING IDENTITY SERVICE'}</div>
-          <button className="submit-button" type="button" onClick={signOut} disabled={busy}>{busy ? 'Closing session…' : 'Sign out securely'} <ArrowRight size={17} /></button>
+          <form className="profile-form" onSubmit={saveProfile}>
+            <label className="field-group">
+              <span className="field-label">DISPLAY NAME</span>
+              <input className="profile-input" value={profileName} onChange={(event) => setProfileName(event.target.value)} placeholder="Your name" minLength={2} maxLength={80} required disabled={profileLoading || profileSaving} />
+            </label>
+            <button className="submit-button" type="submit" disabled={profileLoading || profileSaving}>{profileLoading ? 'Loading profile…' : profileSaving ? 'Saving profile…' : 'Save profile'} <Check size={17} /></button>
+          </form>
+          <button className="signout-button" type="button" onClick={signOut} disabled={busy}>{busy ? 'Closing session…' : 'Sign out'} <ArrowRight size={16} /></button>
           {notice && <div className={`notice ${notice.type}`} role="status">{notice.text}</div>}
         </section>
         <footer className="page-footer"><span>HYPERVISION / IDENTITY SYSTEMS</span><span>BUILT FOR WHAT’S NEXT <ArrowDownRight size={13} /></span></footer>
@@ -385,7 +284,6 @@ function App() {
 
   return (
     <main className="auth-shell">
-      <Atmosphere />
       <div className="ambient-glow ambient-one" />
       <div className="ambient-glow ambient-two" />
 
