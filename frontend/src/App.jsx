@@ -256,7 +256,18 @@ function App() {
     }
 
     setBusy(true)
+    let loginFullscreenAttempt = null
     try {
+      // Fullscreen must be requested during a user gesture. Start it directly
+      // from the sign-in submit so it remains active when the video arrives.
+      if (
+        mode === 'login' &&
+        !document.fullscreenElement &&
+        document.documentElement.requestFullscreen
+      ) {
+        loginFullscreenAttempt = document.documentElement.requestFullscreen().catch(() => null)
+      }
+
       if (mode === 'signup') {
         const redirectUrl = new URL(window.location.href)
         redirectUrl.search = ''
@@ -310,6 +321,13 @@ function App() {
         setNotice({ type: 'success', text: 'If an account exists for that email, a reset link is on its way.' })
       }
     } catch (error) {
+      // Don't leave the user trapped in fullscreen if sign-in failed.
+      if (mode === 'login' && loginFullscreenAttempt) {
+        await loginFullscreenAttempt
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {})
+        }
+      }
       setNotice({ type: 'error', text: friendlyError(error.message) })
     } finally {
       setBusy(false)
