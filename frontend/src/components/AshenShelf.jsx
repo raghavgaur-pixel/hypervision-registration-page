@@ -534,7 +534,7 @@ export default function AshenShelf({ onChoose, renderAuthPanel, initialAuthMode 
       books = VOLUMES.map((volume, index) => {
         const page = paintPage(THREE, volume)
         rememberTexture(page.texture)
-        const pageMat = rememberMaterial(new THREE.MeshStandardMaterial({ map: page.texture, color: 0xffffff, roughness: 0.92 }))
+        const pageMat = rememberMaterial(new THREE.MeshBasicMaterial({ map: page.texture, color: 0xffffff, toneMapped: false }))
         const root = new THREE.Group()
         root.userData.bookId = volume.id
         root.position.set(volume.baseX, -0.68, 0.08)
